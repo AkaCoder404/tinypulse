@@ -19,7 +19,9 @@ func (d *DB) CreateEndpoint(ctx context.Context, ep *model.Endpoint) error {
 	if err != nil {
 		return err
 	}
+	notifierIDs := ep.NotifierIDs
 	*ep = *created
+	ep.NotifierIDs = notifierIDs
 	return nil
 }
 
