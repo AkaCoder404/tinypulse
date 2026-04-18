@@ -4,7 +4,6 @@ A tiny, single-binary, self-hosted uptime monitor for HTTP/HTTPS endpoints. Drop
 
 [![Go Version](https://img.shields.io/badge/go-1.26+-00ADD8.svg)](https://golang.org)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
 ![Binary Size](https://img.shields.io/badge/binary-%3C%2012%20MB-success)
 ![Memory](https://img.shields.io/badge/memory-%3C%2030%20MB-success)
 
@@ -26,7 +25,7 @@ Why use TinyPulse over other uptime monitors?
 
 ### Download a release
 
-Grab the latest binary for your platform from the [Releases](https://github.com/yourusername/tinypulse/releases) page.
+Grab the latest binary for your platform from the [Releases](https://github.com/AkaCoder404/tinypulse/releases) page.
 
 ```bash
 chmod +x tinypulse
@@ -38,7 +37,7 @@ Then open [http://localhost:8080](http://localhost:8080) and log in with usernam
 ### Build from source
 
 ```bash
-git clone https://github.com/yourusername/tinypulse.git
+git clone https://github.com/AkaCoder404/tinypulse.git
 cd tinypulse
 make build
 ./tinypulse
