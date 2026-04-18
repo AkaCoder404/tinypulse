@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          output="tinypulse-${{ matrix.goos }}-${{ matrix.goarch }}"
+          echo "Building $output..."
+          CGO_ENABLED=0 go build -ldflags="-s -w" -o "$output" ./cmd/myuptime
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: tinypulse-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

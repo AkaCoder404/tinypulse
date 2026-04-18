@@ -1,0 +1,36 @@
+# Built binary
+/tinypulse
+/tinypulse.exe
+
+# Go build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/vendor/
+
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Test coverage
+coverage.out
+coverage.html
+
+# Local environment files
+.env
+.env.local
