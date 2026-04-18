@@ -34,7 +34,7 @@ jobs:
         run: |
           output="tinypulse-${{ matrix.goos }}-${{ matrix.goarch }}"
           echo "Building $output..."
-          CGO_ENABLED=0 go build -ldflags="-s -w" -o "$output" ./cmd/myuptime
+          CGO_ENABLED=0 go build -ldflags="-s -w" -o "$output" ./cmd/tinypulse
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
