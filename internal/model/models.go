@@ -4,6 +4,7 @@ import "time"
 
 type Endpoint struct {
 	ID              int64     `json:"id"`
+	Type            string    `json:"type"`
 	Name            string    `json:"name"`
 	URL             string    `json:"url"`
 	IntervalSeconds int       `json:"interval_seconds"`

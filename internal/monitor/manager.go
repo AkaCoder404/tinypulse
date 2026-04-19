@@ -3,7 +3,6 @@ package monitor
 import (
 	"context"
 	"fmt"
-	"io"
 	"log/slog"
 	"math/rand"
 	"net/http"
@@ -143,24 +142,35 @@ func (m *Manager) runWorker(ctx context.Context, ep model.Endpoint) {
 		return
 	}
 
+	var checker Checker
+	if ep.Type == "tcp" {
+		checker = NewTCPChecker(ep.URL)
+	} else {
+		checker = NewHTTPChecker(ep.URL)
+	}
+
 	ticker := time.NewTicker(time.Duration(ep.IntervalSeconds) * time.Second)
 	defer ticker.Stop()
 
 	// immediate first check (safely staggered)
-	m.check(ctx, ep)
+	m.check(ctx, ep, checker)
 
 	for {
 		select {
 		case <-ticker.C:
-			m.check(ctx, ep)
+			m.check(ctx, ep, checker)
 		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (m *Manager) check(ctx context.Context, ep model.Endpoint) {
-	statusCode, responseTimeMs, isUp := m.performCheck(ctx, ep)
+func (m *Manager) check(ctx context.Context, ep model.Endpoint, checker Checker) {
+	// Create a context with a timeout for the check to prevent hanging indefinitely
+	reqCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	statusCode, responseTimeMs, isUp := checker.Check(reqCtx)
 
 	check := &model.Check{
 		EndpointID:     ep.ID,
@@ -206,47 +216,6 @@ func (m *Manager) check(ctx context.Context, ep model.Endpoint) {
 		slog.Info("endpoint down threshold reached", "endpoint_id", ep.ID, "name", ep.Name, "url", ep.URL, "status_code", statusCode)
 		m.dispatcher.SendAlert(ep.ID, "🚨 Service Down", fmt.Sprintf("%s is offline.\nURL: %s", ep.Name, ep.URL))
 	}
-}
-
-func (m *Manager) performCheck(ctx context.Context, ep model.Endpoint) (*int, int, bool) {
-	start := time.Now()
-	statusCode, err := m.doRequest(ctx, ep.URL, http.MethodHead)
-	if err != nil {
-		// If HEAD fails, try GET as a fallback in case the server doesn't support HEAD.
-		if statusCode != nil && *statusCode == http.StatusMethodNotAllowed {
-			start = time.Now()
-			statusCode, err = m.doRequest(ctx, ep.URL, http.MethodGet)
-		}
-	}
-	responseTimeMs := int(time.Since(start).Milliseconds())
-
-	if err != nil {
-		return nil, responseTimeMs, false
-	}
-	isUp := *statusCode >= 200 && *statusCode < 400
-	return statusCode, responseTimeMs, isUp
-}
-
-func (m *Manager) doRequest(ctx context.Context, url, method string) (*int, error) {
-	req, err := http.NewRequestWithContext(ctx, method, url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Add a User-Agent so we don't get blocked by WAFs like Cloudflare
-	req.Header.Set("User-Agent", "tinypulse/1.0 (Health Monitor)")
-
-	resp, err := m.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// Safely read up to 1MB to clear the network buffer before closing
-	io.Copy(io.Discard, io.LimitReader(resp.Body, 1024*1024))
-
-	sc := resp.StatusCode
-	return &sc, nil
 }
 
 func (m *Manager) cleanupLoop(ctx context.Context) {

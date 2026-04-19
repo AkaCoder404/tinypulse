@@ -278,26 +278,43 @@
           class="space-y-4"
         >
           <input type="hidden" id="endpoint-id" />
-          <div>
-            <label
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-              >Name</label
-            >
-            <input
-              type="text"
-              id="name"
-              required
-              placeholder="e.g., Production API"
-              class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
+          <div class="grid grid-cols-3 gap-4">
+            <div class="col-span-1">
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Type</label
+              >
+              <select
+                id="type"
+                required
+                onchange="updateEndpointFormFields()"
+                class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="http">HTTP/S</option>
+                <option value="tcp">TCP Port</option>
+              </select>
+            </div>
+            <div class="col-span-2">
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >Name</label
+              >
+              <input
+                type="text"
+                id="name"
+                required
+                placeholder="e.g., Production API"
+                class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
           </div>
           <div>
-            <label
+            <label id="url-label"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >URL</label
             >
             <input
-              type="url"
+              type="text"
               id="url"
               required
               placeholder="https://api.example.com/health"
@@ -739,6 +756,7 @@
                 btnEdit.onclick = () =>
                   editEndpoint(
                     ep.id,
+                    ep.type || "http",
                     safeName,
                     safeUrl,
                     ep.interval_seconds,
@@ -764,7 +782,7 @@
                       <button onclick="showDetail(${ep.id}, '${safeName}')" title="History" class="p-1.5 rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300 transition">
                         ${iconHistory}
                       </button>
-                      <button id="btn-edit-${ep.id}" onclick='editEndpoint(${ep.id}, "${safeName.replace(/"/g, "&quot;")}", "${safeUrl.replace(/"/g, "&quot;")}", ${ep.interval_seconds}, ${ep.fail_threshold}, ${JSON.stringify(ep.notifier_ids || []).replace(/"/g, "&quot;")})' title="Edit" class="p-1.5 rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                      <button id="btn-edit-${ep.id}" onclick='editEndpoint(${ep.id}, "${ep.type || "http"}", "${safeName.replace(/"/g, "&quot;")}", "${safeUrl.replace(/"/g, "&quot;")}", ${ep.interval_seconds}, ${ep.fail_threshold}, ${JSON.stringify(ep.notifier_ids || []).replace(/"/g, "&quot;")})' title="Edit" class="p-1.5 rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300 transition">
                         ${iconEdit}
                       </button>
                       <button id="btn-pause-${ep.id}" onclick="togglePause(${ep.id})" title="${pauseText}" class="p-1.5 rounded-md text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-300 transition">
@@ -775,7 +793,14 @@
                       </button>
                     </div>
                   </div>
-                  <a id="url-${ep.id}" href="${safeUrl}" target="_blank" class="text-sm text-gray-500 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-400 hover:underline break-all transition">${safeUrl}</a>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                      ${(ep.type || 'http').toUpperCase()}
+                    </span>
+                    ${(ep.type || 'http') === 'http' 
+                      ? `<a id="url-${ep.id}" href="${safeUrl}" target="_blank" class="text-sm text-gray-500 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-400 hover:underline break-all transition">${safeUrl}</a>` 
+                      : `<span id="url-${ep.id}" class="text-sm text-gray-500 dark:text-gray-400 break-all">${safeUrl}</span>`}
+                  </div>
                   <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     <span id="status-text-${ep.id}" class="font-medium ${isUp ? 'text-green-600 dark:text-green-400' : isDown ? 'text-red-600 dark:text-red-400' : ''}">${statusText}</span>
                     <span class="text-gray-300 dark:text-gray-600 mx-1">·</span>
@@ -808,6 +833,8 @@
           document.getElementById("modal-title").textContent = "Add Endpoint";
           document.getElementById("endpoint-form").reset();
           document.getElementById("endpoint-id").value = "";
+          document.getElementById("type").value = "http";
+          updateEndpointFormFields();
           await populateNotifierCheckboxes([]);
 
           const modal = document.getElementById("modal");
@@ -817,6 +844,7 @@
 
         async function editEndpoint(
           id,
+          type,
           name,
           url,
           interval,
@@ -825,16 +853,32 @@
         ) {
           document.getElementById("modal-title").textContent = "Edit Endpoint";
           document.getElementById("endpoint-id").value = id;
+          document.getElementById("type").value = type || "http";
           document.getElementById("name").value = name;
           document.getElementById("url").value = url;
           document.getElementById("interval").value = interval;
           document.getElementById("fail-threshold").value = failThreshold;
+          updateEndpointFormFields();
 
           await populateNotifierCheckboxes(notifierIds);
 
           const modal = document.getElementById("modal");
           modal.classList.remove("hidden");
           modal.classList.add("flex");
+        }
+
+        function updateEndpointFormFields() {
+          const type = document.getElementById("type").value;
+          const urlLabel = document.getElementById("url-label");
+          const urlInput = document.getElementById("url");
+          
+          if (type === "tcp") {
+            urlLabel.textContent = "Address:Port";
+            urlInput.placeholder = "e.g., 192.168.1.50:22 or db.example.com:5432";
+          } else {
+            urlLabel.textContent = "URL";
+            urlInput.placeholder = "https://api.example.com/health";
+          }
         }
 
         function closeModal() {
@@ -885,6 +929,7 @@
           );
 
           const payload = {
+            type: document.getElementById("type").value,
             name: document.getElementById("name").value,
             url: document.getElementById("url").value,
             interval_seconds: parseInt(

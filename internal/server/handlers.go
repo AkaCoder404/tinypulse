@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -33,12 +34,31 @@ func validateEndpoint(ep *model.Endpoint) error {
 		return jsonError("name is required")
 	}
 	if ep.URL == "" {
-		return jsonError("url is required")
+		return jsonError("url or address is required")
 	}
-	u, err := url.Parse(ep.URL)
-	if err != nil || (u.Scheme != "http" && u.Scheme != "https") {
-		return jsonError("url must be a valid http or https URL")
+
+	if ep.Type == "" {
+		ep.Type = "http"
 	}
+
+	if ep.Type == "http" {
+		u, err := url.Parse(ep.URL)
+		if err != nil || (u.Scheme != "http" && u.Scheme != "https") {
+			return jsonError("url must be a valid http or https URL")
+		}
+	} else if ep.Type == "tcp" {
+		if ep.URL == "" {
+			return jsonError("address:port is required for tcp type")
+		}
+		// Validate that the URL is actually in host:port format
+		_, _, err := net.SplitHostPort(ep.URL)
+		if err != nil {
+			return jsonError("TCP monitor address must be in the format host:port (e.g. 1.1.1.1:53 or example.com:443)")
+		}
+	} else {
+		return jsonError("unsupported endpoint type")
+	}
+
 	if ep.IntervalSeconds < 10 {
 		return jsonError("interval_seconds must be at least 10")
 	}

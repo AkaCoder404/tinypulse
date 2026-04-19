@@ -1,6 +1,6 @@
 <h1><img src="tinypulse.png" width="36" height="36" align="center" style="vertical-align: middle; margin-right: 8px;"> TinyPulse</h1>
 
-A tiny, single-binary, self-hosted uptime monitor for HTTP/HTTPS endpoints. Drop it on any VPS, NAS, or Raspberry Pi and start monitoring in seconds.
+A tiny, single-binary, self-hosted uptime monitor for HTTP/HTTPS and TCP endpoints. Drop it on any VPS, NAS, or Raspberry Pi and start monitoring in seconds.
 
 [![Go Version](https://img.shields.io/badge/go-1.26+-00ADD8.svg)](https://golang.org)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -13,6 +13,7 @@ Why use TinyPulse over other uptime monitors?
 
 - **Tiny Footprint:** ~12 MB binary, < 30 MB RAM at rest.
 - **Zero Dependencies:** Single static Go binary with embedded Tailwind CSS frontend. No Docker, no Node.js, no PostgreSQL.
+- **Multiple Monitor Types:** Support for HTTP/HTTPS monitors and raw TCP port connections (with more coming soon).
 - **Efficient Data Layer:** Pure-Go SQLite with WAL mode, chunked pruning, and decoupled asynchronous writers. Every check result is stored locally in a single `.db` file.
 - **Uptime History:** 30-day uptime % and a visual ping hit/miss chart per endpoint.
 - **Concurrent Monitoring:** One lightweight, hardened goroutine per endpoint.
@@ -33,6 +34,14 @@ TINYPULSE_PASSWORD=supersecret ./tinypulse
 ```
 
 Then open [http://localhost:8080](http://localhost:8080) and log in with username `admin` and your password.
+
+### Deployment & Updates (Systemd)
+For running TinyPulse permanently on a Linux VPS (e.g., DigitalOcean, Linode), we provide an automated deployment script. 
+
+Please see the [Deployment and Updates Guide](docs/deployment_and_updates.md) for instructions on:
+- Setting up TinyPulse as a background `systemd` service using `scripts/setup_systemctl.sh`.
+- Updating the binary to a new release.
+- How automated database backups and rollbacks work during upgrades.
 
 ### Build from source
 
