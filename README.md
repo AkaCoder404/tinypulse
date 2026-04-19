@@ -32,16 +32,9 @@ Grab the latest binary for your platform from the [Releases](https://github.com/
 chmod +x tinypulse
 TINYPULSE_PASSWORD=supersecret ./tinypulse
 ```
-
 Then open [http://localhost:8080](http://localhost:8080) and log in with username `admin` and your password.
 
-### Deployment & Updates (Systemd)
-For running TinyPulse permanently on a Linux VPS (e.g., DigitalOcean, Linode), we provide an automated deployment script. 
-
-Please see the [Deployment and Updates Guide](docs/deployment_and_updates.md) for instructions on:
-- Setting up TinyPulse as a background `systemd` service using `scripts/setup_systemctl.sh`.
-- Updating the binary to a new release.
-- How automated database backups and rollbacks work during upgrades.
+> Please see the [Deployment and Updates Guide](docs/deployment_and_updates.md) for an example on how to set up TinyPulse on a server. Also contains information how to update from a previous version.
 
 ### Build from source
 
