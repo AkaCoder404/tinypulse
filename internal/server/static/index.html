@@ -633,7 +633,7 @@
 
           if (!endpoints || !endpoints.length) {
             const hasFilters = document.getElementById('endpoint-search').value || document.getElementById('endpoint-filter').value !== 'all';
-            container.innerHTML = `<div class="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-sm">${hasFilters ? 'No endpoints match your filters.' : 'No endpoints yet. Add one to get started.'}</div>`;
+            container.innerHTML = `<div class="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">${hasFilters ? 'No endpoints match your filters.' : 'No endpoints yet. Add one to get started.'}</div>`;
             return;
           }
 
@@ -983,7 +983,7 @@
         function renderNotifiers(notifiers) {
           const container = document.getElementById("notifiers-container");
           if (!notifiers || !notifiers.length) {
-            container.innerHTML = `<div class="col-span-full text-center py-16 text-gray-500 bg-white rounded-xl shadow-sm border border-gray-200">No notifiers yet. Add Telegram or Pushover.</div>`;
+            container.innerHTML = `<div class="col-span-full text-center py-16 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">No notifiers yet. Add Telegram or Pushover.</div>`;
             return;
           }
 
