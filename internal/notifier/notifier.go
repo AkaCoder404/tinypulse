@@ -14,7 +14,7 @@ import (
 // Provider defines the interface that all notification services must implement.
 type Provider interface {
 	Type() string
-	Send(ctx context.Context, title, message string) error
+	Send(ctx context.Context, endpointID int64, endpointName, title, message string) error
 }
 
 // Factory defines a function that creates a new Provider from a JSON config blob.
@@ -61,7 +61,7 @@ func (d *Dispatcher) Stop() {
 }
 
 // SendAlert fires an alert to all notifiers linked to an endpoint, tracked by the Dispatcher.
-func (d *Dispatcher) SendAlert(endpointID int64, title, message string) {
+func (d *Dispatcher) SendAlert(endpointID int64, endpointName, title, message string) {
 	d.wg.Add(1)
 
 	go func() {
@@ -94,7 +94,7 @@ func (d *Dispatcher) SendAlert(endpointID int64, title, message string) {
 					return
 				}
 
-				if err := provider.Send(ctx, title, message); err != nil {
+				if err := provider.Send(ctx, endpointID, endpointName, title, message); err != nil {
 					slog.Error("failed to send alert", "notifier_id", n.ID, "type", n.Type, "error", err)
 				} else {
 					slog.Info("alert sent successfully", "notifier_id", n.ID, "type", n.Type)

@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 
 	"tinypulse/internal/model"
 )
@@ -83,71 +82,22 @@ func (d *DB) ListActiveEndpoints(ctx context.Context) ([]model.Endpoint, error) 
 	return endpoints, rows.Err()
 }
 
-func (d *DB) ListEndpointsWithStats(ctx context.Context) ([]model.EndpointWithStats, error) {
-	query := `
-SELECT 
-    e.id, e.type, e.name, e.url, e.interval_seconds, e.fail_threshold, e.paused, e.created_at,
-    c.status_code, c.response_time_ms, c.is_up, c.checked_at,
-    u.uptime_pct
-FROM endpoints e
-LEFT JOIN (
-    SELECT endpoint_id, status_code, response_time_ms, is_up, checked_at
-    FROM checks
-    WHERE (endpoint_id, checked_at) IN (
-        SELECT endpoint_id, MAX(checked_at) FROM checks GROUP BY endpoint_id
-    )
-) c ON c.endpoint_id = e.id
-LEFT JOIN (
-    SELECT endpoint_id, ROUND(AVG(is_up) * 100, 2) as uptime_pct
-    FROM checks 
-    WHERE checked_at >= datetime('now', '-30 days') 
-    GROUP BY endpoint_id
-) u ON u.endpoint_id = e.id
-ORDER BY e.created_at DESC
-`
-	rows, err := d.conn.QueryContext(ctx, query)
+
+func (d *DB) ListEndpoints(ctx context.Context) ([]model.Endpoint, error) {
+	rows, err := d.conn.QueryContext(ctx,
+		`SELECT id, type, name, url, interval_seconds, fail_threshold, paused, created_at FROM endpoints ORDER BY created_at DESC`)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var results []model.EndpointWithStats
+	var endpoints []model.Endpoint
 	for rows.Next() {
-		var s model.EndpointWithStats
-		var statusCode sql.NullInt64
-		var responseTimeMs sql.NullInt64
-		var isUp sql.NullBool
-		var checkedAt sql.NullTime
-		var uptime30d sql.NullFloat64
-
-		err := rows.Scan(
-			&s.ID, &s.Type, &s.Name, &s.URL, &s.IntervalSeconds, &s.FailThreshold, &s.Paused, &s.CreatedAt,
-			&statusCode, &responseTimeMs, &isUp, &checkedAt,
-			&uptime30d,
-		)
-		if err != nil {
+		var ep model.Endpoint
+		if err := rows.Scan(&ep.ID, &ep.Type, &ep.Name, &ep.URL, &ep.IntervalSeconds, &ep.FailThreshold, &ep.Paused, &ep.CreatedAt); err != nil {
 			return nil, err
 		}
-		if statusCode.Valid {
-			v := int(statusCode.Int64)
-			s.StatusCode = &v
-		}
-		if responseTimeMs.Valid {
-			v := int(responseTimeMs.Int64)
-			s.ResponseTimeMs = &v
-		}
-		if isUp.Valid {
-			v := isUp.Bool
-			s.IsUp = &v
-		}
-		if checkedAt.Valid {
-			s.CheckedAt = &checkedAt.Time
-		}
-		if uptime30d.Valid {
-			v := uptime30d.Float64
-			s.Uptime30d = &v
-		}
-		results = append(results, s)
+		endpoints = append(endpoints, ep)
 	}
-	return results, rows.Err()
+	return endpoints, rows.Err()
 }

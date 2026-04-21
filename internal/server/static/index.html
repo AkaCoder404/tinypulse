@@ -439,6 +439,7 @@
             >
               <option value="TELEGRAM">Telegram</option>
               <option value="PUSHOVER">Pushover</option>
+              <option value="REDIS">Redis</option>
             </select>
           </div>
 
@@ -825,8 +826,30 @@
             }
           });
 
-          // Fetch ping history for each endpoint in the background
-          endpoints.forEach((ep) => loadHistory(ep.id));
+          // Render ping history using inline recent_checks
+          endpoints.forEach((ep) => {
+            const container = document.getElementById(`history-${ep.id}`);
+            if (!container) return;
+            
+            if (!ep.recent_checks || ep.recent_checks.length === 0) {
+              container.innerHTML = `<span class="text-xs text-gray-400">No history yet</span>`;
+              return;
+            }
+
+            // The backend ring buffer appends new pings to the end.
+            // But if it was loaded from db, they might be in ascending order already.
+            // Let's just use them as-is (newest on right).
+            container.innerHTML = ep.recent_checks
+              .map((h) => {
+                const color = h.is_up ? "bg-green-500" : "bg-red-500";
+                const timeStr = new Date(h.checked_at).toLocaleString();
+                const statusStr = h.status_code ? ` (HTTP ${h.status_code})` : (h.is_up ? " (OK)" : " (Fail)");
+                const respStr = h.response_time_ms ? ` - ${h.response_time_ms}ms` : "";
+                const titleText = `${timeStr}${statusStr}${respStr}`;
+                return `<div title="${titleText}" class="w-1.5 h-3 sm:w-2 sm:h-3.5 rounded-sm ${color} flex-shrink min-w-[2px] opacity-80 hover:opacity-100 transition-opacity"></div>`;
+              })
+              .join("");
+          });
         }
 
         async function openEndpointModal() {
@@ -1085,6 +1108,36 @@
               </select>
             </div>
           `;
+          } else if (type === "REDIS") {
+            container.innerHTML = `
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
+              <input type="text" id="config-address" required placeholder="localhost:6379" value="${escapeHtml(config.address) || 'localhost:6379'}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Password (Optional)</label>
+              <input type="password" id="config-password" placeholder="" value="${escapeHtml(config.password)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">DB</label>
+                <input type="number" id="config-db" min="0" value="${config.db !== undefined ? config.db : 0}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Key Prefix</label>
+                <input type="text" id="config-key-prefix" placeholder="tinypulse" value="${escapeHtml(config.key_prefix) || 'tinypulse'}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-lg p-3 text-xs text-gray-600 dark:text-gray-300">
+              <p class="font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                How it works
+              </p>
+              <p class="mt-1">Each alert increments a counter in Redis:</p>
+              <code class="block bg-white dark:bg-gray-800 px-2 py-1 rounded border border-amber-200 dark:border-amber-700 mt-1 font-mono">INCR {prefix}:endpoint:{id}:count</code>
+              <p class="mt-1">Also stores endpoint name, last title and message.</p>
+            </div>
+          `;
           }
         }
 
@@ -1106,6 +1159,13 @@
               priority:
                 parseInt(document.getElementById("config-priority").value, 10) ||
                 0,
+            };
+          } else if (type === "REDIS") {
+            config = {
+              address: document.getElementById("config-address").value.trim(),
+              password: document.getElementById("config-password").value.trim(),
+              db: parseInt(document.getElementById("config-db").value, 10) || 0,
+              key_prefix: document.getElementById("config-key-prefix").value.trim() || "tinypulse",
             };
           }
 
@@ -1168,29 +1228,6 @@
         }
 
         // --- Helpers (Pause, Delete, History) ---
-        async function loadHistory(id) {
-          try {
-            const res = await fetch(`/api/endpoints/${id}/history?limit=40`);
-            const data = await res.json();
-            const container = document.getElementById(`history-${id}`);
-            if (!container) return;
-            if (!Array.isArray(data) || data.length === 0) {
-              container.innerHTML = `<span class="text-xs text-gray-400">No history yet</span>`;
-              return;
-            }
-            // Reverse so oldest is leftmost
-            const items = data.slice().reverse();
-            container.innerHTML = items
-              .map((h) => {
-                const color = h.is_up ? "bg-green-500" : "bg-red-500";
-                const timeStr = new Date(h.checked_at).toLocaleString();
-                return `<div title="${timeStr}" class="w-1.5 h-3 sm:w-2 sm:h-3.5 rounded-sm ${color} flex-shrink min-w-[2px] opacity-80 hover:opacity-100 transition-opacity"></div>`;
-              })
-              .join("");
-          } catch (e) {
-            console.error("history fetch error", e);
-          }
-        }
 
         function timeAgo(dateString) {
           if (!dateString) return "Never";

@@ -33,7 +33,7 @@ func (t *Telegram) Type() string {
 	return "TELEGRAM"
 }
 
-func (t *Telegram) Send(ctx context.Context, title, message string) error {
+func (t *Telegram) Send(ctx context.Context, endpointID int64, endpointName, title, message string) error {
 	// Combine title and message for Telegram (which doesn't have a native title field)
 	fullText := fmt.Sprintf("<b>%s</b>\n\n%s", title, message)
 
