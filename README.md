@@ -63,15 +63,47 @@ TinyPulse can be configured via flags or environment variables.
 
 ## Notifications
 
-TinyPulse supports multiple notification channels to alert you when an endpoint goes down or recovers. You can configure these in the UI and link them to specific endpoints. Currently supported: *Telegram, Pushover*
+TinyPulse supports multiple notification channels to alert you when an endpoint goes down or recovers. You can configure these in the UI and link them to specific endpoints. Currently supported: *Telegram, Pushover, Redis*
 
 *More notification providers (Slack, Discord, Webhooks) will be added in future releases.*
 
+## REST API
+
+TinyPulse includes a full JSON REST API, which powers the dashboard and can be used for automation. If you set a `TINYPULSE_PASSWORD`, you must provide it via HTTP Basic Auth (Username: `admin`).
+
+**Endpoints (`/api/endpoints`)**
+- `GET /api/endpoints` - List all endpoints with their current 30-day uptime statistics.
+- `POST /api/endpoints` - Create a new endpoint.
+- `GET /api/endpoints/{id}` - Get a specific endpoint.
+- `PUT /api/endpoints/{id}` - Update a specific endpoint.
+- `DELETE /api/endpoints/{id}` - Delete an endpoint and all its history.
+- `POST /api/endpoints/{id}/pause` - Toggle pause/resume for monitoring.
+- `GET /api/endpoints/{id}/history?limit=60` - Get lightweight, recent ping data for the visual timeline.
+- `GET /api/endpoints/{id}/checks?limit=100` - Get full raw check history (status codes, response times).
+
+**Notifiers (`/api/notifiers`)**
+- `GET /api/notifiers` - List all notifiers.
+- `POST /api/notifiers` - Create a new notifier.
+- `GET /api/notifiers/{id}` - Get a specific notifier.
+- `PUT /api/notifiers/{id}` - Update a specific notifier.
+- `DELETE /api/notifiers/{id}` - Delete a notifier.
+- `POST /api/notifiers/{id}/test` - Trigger a test alert to verify credentials.
+
 ---
+
+## Performance
+
+> TODO: Requires more comprehensive testing in different environment.
+
+You can take a look at the ![performance](docs/performance.md) docs for some testing.
 
 ## Contributing
 
 Contributions are welcome! Please open an issue or pull request. Feel free to request features as well.
+
+## Acknowledgements
+
+Heavy expired by Uptime-Kuma!
 
 ## License
 
