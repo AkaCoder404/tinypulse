@@ -184,38 +184,74 @@
         <!-- Overview + Toolbar -->
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div class="flex items-center gap-3 text-sm">
-            <span class="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+            <span
+              class="flex items-center gap-1.5 text-gray-600 dark:text-gray-400"
+            >
               <span class="w-2 h-2 rounded-full bg-green-500"></span>
               <span id="count-up">0</span> Up
             </span>
-            <span class="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+            <span
+              class="flex items-center gap-1.5 text-gray-600 dark:text-gray-400"
+            >
               <span class="w-2 h-2 rounded-full bg-red-500"></span>
               <span id="count-down">0</span> Down
             </span>
-            <span class="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+            <span
+              class="flex items-center gap-1.5 text-gray-600 dark:text-gray-400"
+            >
               <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
               <span id="count-paused">0</span> Paused
             </span>
           </div>
           <div class="flex items-center gap-2">
             <div class="relative">
-              <svg class="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              <svg
+                class="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
               </svg>
-              <input type="text" id="endpoint-search" placeholder="Search..." oninput="filterEndpoints()"
-                class="pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 w-36 sm:w-48">
+              <input
+                type="text"
+                id="endpoint-search"
+                placeholder="Search..."
+                oninput="filterEndpoints()"
+                class="pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 w-36 sm:w-48"
+              />
             </div>
-            <select id="endpoint-filter" onchange="filterEndpoints()"
-              class="text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <select
+              id="endpoint-filter"
+              onchange="filterEndpoints()"
+              class="text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
               <option value="all">All</option>
               <option value="up">Up</option>
               <option value="down">Down</option>
               <option value="paused">Paused</option>
             </select>
-            <button onclick="openEndpointModal()"
-              class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition flex items-center gap-1.5">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            <button
+              onclick="openEndpointModal()"
+              class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition flex items-center gap-1.5"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                ></path>
               </svg>
               <span class="hidden sm:inline">Add</span>
             </button>
@@ -309,7 +345,8 @@
             </div>
           </div>
           <div>
-            <label id="url-label"
+            <label
+              id="url-label"
               class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >URL</label
             >
@@ -439,6 +476,7 @@
             >
               <option value="TELEGRAM">Telegram</option>
               <option value="PUSHOVER">Pushover</option>
+              <option value="REDIS">Redis</option>
             </select>
           </div>
 
@@ -517,256 +555,277 @@
     </div>
 
     <script>
-        let globalNotifiers = []; // Cache to populate the endpoint modal
-        let allEndpoints = [];    // Raw data for filtering
-        let refreshInterval;
+      let globalNotifiers = []; // Cache to populate the endpoint modal
+      let allEndpoints = []; // Raw data for filtering
+      let refreshInterval;
 
-        // --- Theme Management ---
+      // --- Theme Management ---
       function toggleThemeMenu() {
-        const menu = document.getElementById('theme-menu');
-        menu.classList.toggle('hidden');
+        const menu = document.getElementById("theme-menu");
+        menu.classList.toggle("hidden");
       }
 
       function setTheme(theme) {
-        if (theme === 'system') {
-          localStorage.removeItem('tinypulse-theme');
-          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
+        if (theme === "system") {
+          localStorage.removeItem("tinypulse-theme");
+          if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            document.documentElement.classList.add("dark");
           } else {
-            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.remove("dark");
           }
         } else {
-          localStorage.setItem('tinypulse-theme', theme);
-          if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
+          localStorage.setItem("tinypulse-theme", theme);
+          if (theme === "dark") {
+            document.documentElement.classList.add("dark");
           } else {
-            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.remove("dark");
           }
         }
         toggleThemeMenu();
       }
 
       // Close theme menu if clicking outside
-      document.addEventListener('click', (event) => {
-        const btn = document.getElementById('theme-btn');
-        const menu = document.getElementById('theme-menu');
-        if (btn && menu && !btn.contains(event.target) && !menu.contains(event.target)) {
-          menu.classList.add('hidden');
+      document.addEventListener("click", (event) => {
+        const btn = document.getElementById("theme-btn");
+        const menu = document.getElementById("theme-menu");
+        if (
+          btn &&
+          menu &&
+          !btn.contains(event.target) &&
+          !menu.contains(event.target)
+        ) {
+          menu.classList.add("hidden");
         }
       });
 
       // --- Tab Management ---
-        function switchTab(tab) {
-          document
-            .getElementById("view-endpoints")
-            .classList.toggle("hidden", tab !== "endpoints");
-          document
-            .getElementById("view-notifiers")
-            .classList.toggle("hidden", tab !== "notifiers");
+      function switchTab(tab) {
+        document
+          .getElementById("view-endpoints")
+          .classList.toggle("hidden", tab !== "endpoints");
+        document
+          .getElementById("view-notifiers")
+          .classList.toggle("hidden", tab !== "notifiers");
 
-          const tabEndpoints = document.getElementById("tab-endpoints");
-          const tabNotifiers = document.getElementById("tab-notifiers");
+        const tabEndpoints = document.getElementById("tab-endpoints");
+        const tabNotifiers = document.getElementById("tab-notifiers");
 
-          if (tab === "endpoints") {
-            tabEndpoints.className =
-              "px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-900 transition";
-            tabNotifiers.className =
-              "px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition";
-            fetchEndpoints();
-          } else {
-            tabEndpoints.className =
-              "px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition";
-            tabNotifiers.className =
-              "px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-900 transition";
-            fetchNotifiers();
-          }
+        if (tab === "endpoints") {
+          tabEndpoints.className =
+            "px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-900 transition";
+          tabNotifiers.className =
+            "px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition";
+          fetchEndpoints();
+        } else {
+          tabEndpoints.className =
+            "px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition";
+          tabNotifiers.className =
+            "px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-900 transition";
+          fetchNotifiers();
         }
+      }
 
-        // --- Endpoints Logic ---
-        async function fetchEndpoints() {
-          if (
-            document.getElementById("view-endpoints").classList.contains("hidden")
-          )
-            return;
-          try {
-            const res = await fetch("/api/endpoints");
-            const data = await res.json();
-            allEndpoints = data;
-            filterEndpoints();
-          } catch (e) {
-            console.error("fetch error", e);
-          }
+      // --- Endpoints Logic ---
+      async function fetchEndpoints() {
+        if (
+          document.getElementById("view-endpoints").classList.contains("hidden")
+        )
+          return;
+        try {
+          const res = await fetch("/api/endpoints");
+          const data = await res.json();
+          allEndpoints = data;
+          filterEndpoints();
+        } catch (e) {
+          console.error("fetch error", e);
         }
+      }
 
-        function filterEndpoints() {
-          const search = document.getElementById('endpoint-search').value.toLowerCase();
-          const filter = document.getElementById('endpoint-filter').value;
+      function filterEndpoints() {
+        const search = document
+          .getElementById("endpoint-search")
+          .value.toLowerCase();
+        const filter = document.getElementById("endpoint-filter").value;
 
-          let filtered = allEndpoints;
+        let filtered = allEndpoints;
 
-          if (filter !== 'all') {
-            if (filter === 'up') filtered = filtered.filter(ep => ep.is_up === true && !ep.paused);
-            if (filter === 'down') filtered = filtered.filter(ep => ep.is_up === false && !ep.paused);
-            if (filter === 'paused') filtered = filtered.filter(ep => ep.paused);
-          }
-
-          if (search) {
-            filtered = filtered.filter(ep =>
-              ep.name.toLowerCase().includes(search) ||
-              ep.url.toLowerCase().includes(search)
+        if (filter !== "all") {
+          if (filter === "up")
+            filtered = filtered.filter((ep) => ep.is_up === true && !ep.paused);
+          if (filter === "down")
+            filtered = filtered.filter(
+              (ep) => ep.is_up === false && !ep.paused,
             );
-          }
-
-          renderEndpoints(filtered);
+          if (filter === "paused")
+            filtered = filtered.filter((ep) => ep.paused);
         }
 
-        function renderEndpoints(endpoints) {
-          const container = document.getElementById("endpoints-container");
+        if (search) {
+          filtered = filtered.filter(
+            (ep) =>
+              ep.name.toLowerCase().includes(search) ||
+              ep.url.toLowerCase().includes(search),
+          );
+        }
 
-          // Update counts from all endpoints
-          const upCount = allEndpoints.filter(ep => ep.is_up === true && !ep.paused).length;
-          const downCount = allEndpoints.filter(ep => ep.is_up === false && !ep.paused).length;
-          const pausedCount = allEndpoints.filter(ep => ep.paused).length;
-          document.getElementById('count-up').textContent = upCount;
-          document.getElementById('count-down').textContent = downCount;
-          document.getElementById('count-paused').textContent = pausedCount;
+        renderEndpoints(filtered);
+      }
 
-          if (!endpoints || !endpoints.length) {
-            const hasFilters = document.getElementById('endpoint-search').value || document.getElementById('endpoint-filter').value !== 'all';
-            container.innerHTML = `<div class="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">${hasFilters ? 'No endpoints match your filters.' : 'No endpoints yet. Add one to get started.'}</div>`;
-            return;
+      function renderEndpoints(endpoints) {
+        const container = document.getElementById("endpoints-container");
+
+        // Update counts from all endpoints
+        const upCount = allEndpoints.filter(
+          (ep) => ep.is_up === true && !ep.paused,
+        ).length;
+        const downCount = allEndpoints.filter(
+          (ep) => ep.is_up === false && !ep.paused,
+        ).length;
+        const pausedCount = allEndpoints.filter((ep) => ep.paused).length;
+        document.getElementById("count-up").textContent = upCount;
+        document.getElementById("count-down").textContent = downCount;
+        document.getElementById("count-paused").textContent = pausedCount;
+
+        if (!endpoints || !endpoints.length) {
+          const hasFilters =
+            document.getElementById("endpoint-search").value ||
+            document.getElementById("endpoint-filter").value !== "all";
+          container.innerHTML = `<div class="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">${hasFilters ? "No endpoints match your filters." : "No endpoints yet. Add one to get started."}</div>`;
+          return;
+        }
+
+        // Remove placeholder if present
+        if (
+          container.children.length === 1 &&
+          container.children[0].classList.contains("text-center")
+        ) {
+          container.innerHTML = "";
+        }
+
+        // Track which IDs are in the new dataset
+        const currentIds = new Set(endpoints.map((ep) => ep.id.toString()));
+
+        // Remove cards that are no longer in the dataset
+        Array.from(container.children).forEach((child) => {
+          if (!child.id.startsWith("card-")) return;
+          const id = child.id.replace("card-", "");
+          if (!currentIds.has(id)) {
+            container.removeChild(child);
           }
+        });
 
-          // Remove placeholder if present
-          if (
-            container.children.length === 1 &&
-            container.children[0].classList.contains("text-center")
-          ) {
-            container.innerHTML = "";
-          }
+        const iconHistory = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        const iconEdit = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>`;
+        const iconPause = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+        const iconPlay = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+        const iconDelete = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
 
-          // Track which IDs are in the new dataset
-          const currentIds = new Set(endpoints.map((ep) => ep.id.toString()));
+        // Update or create cards
+        endpoints.forEach((ep) => {
+          const isUp = ep.is_up === true;
+          const isDown = ep.is_up === false;
+          const statusColor = isUp
+            ? "bg-green-500"
+            : isDown
+              ? "bg-red-500"
+              : "bg-gray-300";
+          const statusText = isUp ? "UP" : isDown ? "DOWN" : "UNKNOWN";
+          const uptime =
+            ep.uptime_24h !== null ? ep.uptime_24h.toFixed(2) + "%" : "—";
+          const respTime =
+            ep.response_time_ms !== null ? ep.response_time_ms + " ms" : "—";
+          const lastChecked = timeAgo(ep.checked_at);
+          const lastCheckedTitle = ep.checked_at
+            ? new Date(ep.checked_at).toLocaleString()
+            : "Never";
+          const pauseText = ep.paused ? "Resume" : "Pause";
+          const opacity = ep.paused ? "opacity-60" : "opacity-100";
+          const pausedBadgeHtml = ep.paused
+            ? `<span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider border border-yellow-200 dark:border-yellow-800">Paused</span>`
+            : "";
+          const pausedBadge = `<span id="paused-badge-${ep.id}">${pausedBadgeHtml}</span>`;
 
-          // Remove cards that are no longer in the dataset
-          Array.from(container.children).forEach((child) => {
-            if (!child.id.startsWith("card-")) return;
-            const id = child.id.replace("card-", "");
-            if (!currentIds.has(id)) {
-              container.removeChild(child);
+          const notifierCount = ep.notifier_ids ? ep.notifier_ids.length : 0;
+          const notifiersBadge =
+            notifierCount > 0
+              ? `<span id="notifier-badge-${ep.id}" class="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-0.5 rounded text-xs flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg> ${notifierCount}</span>`
+              : `<span id="notifier-badge-${ep.id}"></span>`;
+
+          const safeName = escapeHtml(ep.name);
+          const safeUrl = escapeHtml(ep.url);
+
+          let existingCard = document.getElementById(`card-${ep.id}`);
+          if (existingCard) {
+            // Update classes dynamically
+            existingCard.className = `bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 ${opacity} transition`;
+            const dot = document.getElementById(`status-dot-${ep.id}`);
+            if (dot)
+              dot.className = `inline-block w-3 h-3 rounded-full ${statusColor} shadow-sm ${isUp ? "pulse" : ""}`;
+
+            const title = document.getElementById(`title-${ep.id}`);
+            if (title) title.textContent = safeName;
+
+            const urlLink = document.getElementById(`url-${ep.id}`);
+            if (urlLink) {
+              urlLink.textContent = safeUrl;
+              urlLink.href = safeUrl;
             }
-          });
 
-          const iconHistory = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
-          const iconEdit = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>`;
-          const iconPause = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-          const iconPlay = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
-          const iconDelete = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
+            const badgeContainer = document.getElementById(
+              `notifier-container-${ep.id}`,
+            );
+            if (badgeContainer && badgeContainer.innerHTML !== notifiersBadge) {
+              badgeContainer.innerHTML = notifiersBadge;
+            }
 
-          // Update or create cards
-          endpoints.forEach((ep) => {
-            const isUp = ep.is_up === true;
-            const isDown = ep.is_up === false;
-            const statusColor = isUp
-              ? "bg-green-500"
-              : isDown
-                ? "bg-red-500"
-                : "bg-gray-300";
-            const statusText = isUp ? "UP" : isDown ? "DOWN" : "UNKNOWN";
-            const uptime =
-              ep.uptime_30d !== null ? ep.uptime_30d.toFixed(2) + "%" : "—";
-            const respTime =
-              ep.response_time_ms !== null ? ep.response_time_ms + " ms" : "—";
-            const lastChecked = timeAgo(ep.checked_at);
-            const lastCheckedTitle = ep.checked_at
-              ? new Date(ep.checked_at).toLocaleString()
-              : "Never";
-            const pauseText = ep.paused ? "Resume" : "Pause";
-            const opacity = ep.paused ? "opacity-60" : "opacity-100";
-            const pausedBadgeHtml = ep.paused
-              ? `<span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider border border-yellow-200 dark:border-yellow-800">Paused</span>`
-              : "";
-            const pausedBadge = `<span id="paused-badge-${ep.id}">${pausedBadgeHtml}</span>`;
+            const textStatus = document.getElementById(`status-text-${ep.id}`);
+            if (textStatus) {
+              textStatus.textContent = statusText;
+              textStatus.className = `font-medium ${isUp ? "text-green-600 dark:text-green-400" : isDown ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}`;
+            }
 
-            const notifierCount = ep.notifier_ids ? ep.notifier_ids.length : 0;
-            const notifiersBadge =
-              notifierCount > 0
-                ? `<span id="notifier-badge-${ep.id}" class="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-0.5 rounded text-xs flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg> ${notifierCount}</span>`
-                : `<span id="notifier-badge-${ep.id}"></span>`;
+            const textResp = document.getElementById(`resp-text-${ep.id}`);
+            if (textResp) textResp.textContent = respTime;
 
-            const safeName = escapeHtml(ep.name);
-            const safeUrl = escapeHtml(ep.url);
+            const textUptime = document.getElementById(`uptime-text-${ep.id}`);
+            if (textUptime) textUptime.textContent = uptime;
 
-            let existingCard = document.getElementById(`card-${ep.id}`);
-            if (existingCard) {
-              // Update classes dynamically
-              existingCard.className = `bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 ${opacity} transition`;
-              const dot = document.getElementById(`status-dot-${ep.id}`);
-              if (dot)
-                dot.className = `inline-block w-3 h-3 rounded-full ${statusColor} shadow-sm ${isUp ? "pulse" : ""}`;
+            const textChecked = document.getElementById(
+              `checked-text-${ep.id}`,
+            );
+            if (textChecked) {
+              textChecked.textContent = lastChecked;
+              textChecked.title = lastCheckedTitle;
+            }
 
-              const title = document.getElementById(`title-${ep.id}`);
-              if (title) title.textContent = safeName;
+            const pausedBadgeEl = document.getElementById(
+              `paused-badge-${ep.id}`,
+            );
+            if (pausedBadgeEl) pausedBadgeEl.innerHTML = pausedBadgeHtml;
 
-              const urlLink = document.getElementById(`url-${ep.id}`);
-              if (urlLink) {
-                urlLink.textContent = safeUrl;
-                urlLink.href = safeUrl;
-              }
+            const btnPause = document.getElementById(`btn-pause-${ep.id}`);
+            if (btnPause) {
+              btnPause.title = pauseText;
+              btnPause.innerHTML = ep.paused ? iconPlay : iconPause;
+            }
 
-              const badgeContainer = document.getElementById(
-                `notifier-container-${ep.id}`,
-              );
-              if (badgeContainer && badgeContainer.innerHTML !== notifiersBadge) {
-                badgeContainer.innerHTML = notifiersBadge;
-              }
-
-              const textStatus = document.getElementById(`status-text-${ep.id}`);
-              if (textStatus) {
-                textStatus.textContent = statusText;
-                textStatus.className = `font-medium ${isUp ? 'text-green-600 dark:text-green-400' : isDown ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`;
-              }
-
-              const textResp = document.getElementById(`resp-text-${ep.id}`);
-              if (textResp) textResp.textContent = respTime;
-
-              const textUptime = document.getElementById(`uptime-text-${ep.id}`);
-              if (textUptime) textUptime.textContent = uptime;
-
-              const textChecked = document.getElementById(
-                `checked-text-${ep.id}`,
-              );
-              if (textChecked) {
-                textChecked.textContent = lastChecked;
-                textChecked.title = lastCheckedTitle;
-              }
-
-              const pausedBadgeEl = document.getElementById(`paused-badge-${ep.id}`);
-              if (pausedBadgeEl) pausedBadgeEl.innerHTML = pausedBadgeHtml;
-
-              const btnPause = document.getElementById(`btn-pause-${ep.id}`);
-              if (btnPause) {
-                btnPause.title = pauseText;
-                btnPause.innerHTML = ep.paused ? iconPlay : iconPause;
-              }
-
-              // Re-bind the edit button with fresh data
-              const btnEdit = document.getElementById(`btn-edit-${ep.id}`);
-              if (btnEdit) {
-                btnEdit.onclick = () =>
-                  editEndpoint(
-                    ep.id,
-                    ep.type || "http",
-                    safeName,
-                    safeUrl,
-                    ep.interval_seconds,
-                    ep.fail_threshold,
-                    ep.notifier_ids || [],
-                  );
-              }
-            } else {
-              // Create new card
-              const cardHtml = `
+            // Re-bind the edit button with fresh data
+            const btnEdit = document.getElementById(`btn-edit-${ep.id}`);
+            if (btnEdit) {
+              btnEdit.onclick = () =>
+                editEndpoint(
+                  ep.id,
+                  ep.type || "http",
+                  safeName,
+                  safeUrl,
+                  ep.interval_seconds,
+                  ep.fail_threshold,
+                  ep.notifier_ids || [],
+                );
+            }
+          } else {
+            // Create new card
+            const cardHtml = `
               <div class="flex items-start gap-3">
                 <div class="mt-1">
                   <span id="status-dot-${ep.id}" class="inline-block w-3 h-3 rounded-full ${statusColor} shadow-sm ${isUp ? "pulse" : ""}"></span>
@@ -795,18 +854,20 @@
                   </div>
                   <div class="flex items-center gap-2 mt-0.5">
                     <span class="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
-                      ${(ep.type || 'http').toUpperCase()}
+                      ${(ep.type || "http").toUpperCase()}
                     </span>
-                    ${(ep.type || 'http') === 'http' 
-                      ? `<a id="url-${ep.id}" href="${safeUrl}" target="_blank" class="text-sm text-gray-500 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-400 hover:underline break-all transition">${safeUrl}</a>` 
-                      : `<span id="url-${ep.id}" class="text-sm text-gray-500 dark:text-gray-400 break-all">${safeUrl}</span>`}
+                    ${
+                      (ep.type || "http") === "http"
+                        ? `<a id="url-${ep.id}" href="${safeUrl}" target="_blank" class="text-sm text-gray-500 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-400 hover:underline break-all transition">${safeUrl}</a>`
+                        : `<span id="url-${ep.id}" class="text-sm text-gray-500 dark:text-gray-400 break-all">${safeUrl}</span>`
+                    }
                   </div>
                   <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    <span id="status-text-${ep.id}" class="font-medium ${isUp ? 'text-green-600 dark:text-green-400' : isDown ? 'text-red-600 dark:text-red-400' : ''}">${statusText}</span>
+                    <span id="status-text-${ep.id}" class="font-medium ${isUp ? "text-green-600 dark:text-green-400" : isDown ? "text-red-600 dark:text-red-400" : ""}">${statusText}</span>
                     <span class="text-gray-300 dark:text-gray-600 mx-1">·</span>
                     <span id="resp-text-${ep.id}">${respTime}</span>
                     <span class="text-gray-300 dark:text-gray-600 mx-1">·</span>
-                    <span id="uptime-text-${ep.id}" title="30-day Uptime">${uptime}</span>
+                    <span id="uptime-text-${ep.id}" title="24-hour Uptime">${uptime}</span>
                     <span class="text-gray-300 dark:text-gray-600 mx-1">·</span>
                     <span id="checked-text-${ep.id}" title="${lastCheckedTitle}">${lastChecked}</span>
                   </div>
@@ -817,179 +878,208 @@
               </div>
             `;
 
-              const newCard = document.createElement("div");
-              newCard.id = `card-${ep.id}`;
-              newCard.className = `bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 ${opacity} transition`;
-              newCard.innerHTML = cardHtml;
-              container.appendChild(newCard);
-            }
-          });
-
-          // Fetch ping history for each endpoint in the background
-          endpoints.forEach((ep) => loadHistory(ep.id));
-        }
-
-        async function openEndpointModal() {
-          document.getElementById("modal-title").textContent = "Add Endpoint";
-          document.getElementById("endpoint-form").reset();
-          document.getElementById("endpoint-id").value = "";
-          document.getElementById("type").value = "http";
-          updateEndpointFormFields();
-          await populateNotifierCheckboxes([]);
-
-          const modal = document.getElementById("modal");
-          modal.classList.remove("hidden");
-          modal.classList.add("flex");
-        }
-
-        async function editEndpoint(
-          id,
-          type,
-          name,
-          url,
-          interval,
-          failThreshold,
-          notifierIds,
-        ) {
-          document.getElementById("modal-title").textContent = "Edit Endpoint";
-          document.getElementById("endpoint-id").value = id;
-          document.getElementById("type").value = type || "http";
-          document.getElementById("name").value = name;
-          document.getElementById("url").value = url;
-          document.getElementById("interval").value = interval;
-          document.getElementById("fail-threshold").value = failThreshold;
-          updateEndpointFormFields();
-
-          await populateNotifierCheckboxes(notifierIds);
-
-          const modal = document.getElementById("modal");
-          modal.classList.remove("hidden");
-          modal.classList.add("flex");
-        }
-
-        function updateEndpointFormFields() {
-          const type = document.getElementById("type").value;
-          const urlLabel = document.getElementById("url-label");
-          const urlInput = document.getElementById("url");
-          
-          if (type === "tcp") {
-            urlLabel.textContent = "Address:Port";
-            urlInput.placeholder = "e.g., 192.168.1.50:22 or db.example.com:5432";
-          } else {
-            urlLabel.textContent = "URL";
-            urlInput.placeholder = "https://api.example.com/health";
+            const newCard = document.createElement("div");
+            newCard.id = `card-${ep.id}`;
+            newCard.className = `bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 ${opacity} transition`;
+            newCard.innerHTML = cardHtml;
+            container.appendChild(newCard);
           }
-        }
+        });
 
-        function closeModal() {
-          const modal = document.getElementById("modal");
-          modal.classList.add("hidden");
-          modal.classList.remove("flex");
-        }
+        // Render ping history using inline recent_checks
+        endpoints.forEach((ep) => {
+          const container = document.getElementById(`history-${ep.id}`);
+          if (!container) return;
 
-        async function populateNotifierCheckboxes(selectedIds) {
-          const container = document.getElementById("endpoint-notifiers-list");
-
-          // Fetch fresh list if empty
-          if (globalNotifiers.length === 0) {
-            try {
-              const res = await fetch("/api/notifiers");
-              if (res.ok) globalNotifiers = await res.json();
-            } catch (e) {}
-          }
-
-          if (globalNotifiers.length === 0) {
-            container.innerHTML = `<div class="text-gray-500 italic px-2">No notifiers created yet.</div>`;
+          if (!ep.recent_checks || ep.recent_checks.length === 0) {
+            container.innerHTML = `<span class="text-xs text-gray-400">No history yet</span>`;
             return;
           }
 
-          container.innerHTML = globalNotifiers
-            .map((n) => {
-              const isChecked = selectedIds.includes(n.id) ? "checked" : "";
-              return `
+          // The backend ring buffer appends new pings to the end.
+          // But if it was loaded from db, they might be in ascending order already.
+          // Let's just use them as-is (newest on right).
+          container.innerHTML = ep.recent_checks
+            .map((h) => {
+              const color = h.is_up ? "bg-green-500" : "bg-red-500";
+              const timeStr = new Date(h.checked_at).toLocaleString();
+              const statusStr = h.status_code
+                ? ` (HTTP ${h.status_code})`
+                : h.is_up
+                  ? " (OK)"
+                  : " (Fail)";
+              const respStr = h.response_time_ms
+                ? ` - ${h.response_time_ms}ms`
+                : "";
+              const titleText = `${timeStr}${statusStr}${respStr}`;
+              return `<div title="${titleText}" class="w-1.5 h-3 sm:w-2 sm:h-3.5 rounded-sm ${color} flex-shrink min-w-[2px] opacity-80 hover:opacity-100 transition-opacity"></div>`;
+            })
+            .join("");
+        });
+      }
+
+      async function openEndpointModal() {
+        document.getElementById("modal-title").textContent = "Add Endpoint";
+        document.getElementById("endpoint-form").reset();
+        document.getElementById("endpoint-id").value = "";
+        document.getElementById("type").value = "http";
+        updateEndpointFormFields();
+        await populateNotifierCheckboxes([]);
+
+        const modal = document.getElementById("modal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+
+      async function editEndpoint(
+        id,
+        type,
+        name,
+        url,
+        interval,
+        failThreshold,
+        notifierIds,
+      ) {
+        document.getElementById("modal-title").textContent = "Edit Endpoint";
+        document.getElementById("endpoint-id").value = id;
+        document.getElementById("type").value = type || "http";
+        document.getElementById("name").value = name;
+        document.getElementById("url").value = url;
+        document.getElementById("interval").value = interval;
+        document.getElementById("fail-threshold").value = failThreshold;
+        updateEndpointFormFields();
+
+        await populateNotifierCheckboxes(notifierIds);
+
+        const modal = document.getElementById("modal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+
+      function updateEndpointFormFields() {
+        const type = document.getElementById("type").value;
+        const urlLabel = document.getElementById("url-label");
+        const urlInput = document.getElementById("url");
+
+        if (type === "tcp") {
+          urlLabel.textContent = "Address:Port";
+          urlInput.placeholder = "e.g., 192.168.1.50:22 or db.example.com:5432";
+        } else {
+          urlLabel.textContent = "URL";
+          urlInput.placeholder = "https://api.example.com/health";
+        }
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("modal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+
+      async function populateNotifierCheckboxes(selectedIds) {
+        const container = document.getElementById("endpoint-notifiers-list");
+
+        // Fetch fresh list if empty
+        if (globalNotifiers.length === 0) {
+          try {
+            const res = await fetch("/api/notifiers");
+            if (res.ok) globalNotifiers = await res.json();
+          } catch (e) {}
+        }
+
+        if (globalNotifiers.length === 0) {
+          container.innerHTML = `<div class="text-gray-500 italic px-2">No notifiers created yet.</div>`;
+          return;
+        }
+
+        container.innerHTML = globalNotifiers
+          .map((n) => {
+            const isChecked = selectedIds.includes(n.id) ? "checked" : "";
+            return `
             <label class="flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded cursor-pointer transition">
               <input type="checkbox" name="notifiers" value="${n.id}" ${isChecked} class="w-4 h-4 text-green-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-green-500">
               <span class="flex-1 text-gray-800 dark:text-gray-200">${escapeHtml(n.name)}</span>
               <span class="text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded uppercase tracking-wider">${n.type}</span>
             </label>
           `;
-            })
-            .join("");        }
+          })
+          .join("");
+      }
 
-        async function saveEndpoint(e) {
-          e.preventDefault();
-          const id = document.getElementById("endpoint-id").value;
+      async function saveEndpoint(e) {
+        e.preventDefault();
+        const id = document.getElementById("endpoint-id").value;
 
-          // Gather checked notifiers
-          const checkboxes = document.querySelectorAll(
-            'input[name="notifiers"]:checked',
-          );
-          const notifier_ids = Array.from(checkboxes).map((cb) =>
-            parseInt(cb.value, 10),
-          );
+        // Gather checked notifiers
+        const checkboxes = document.querySelectorAll(
+          'input[name="notifiers"]:checked',
+        );
+        const notifier_ids = Array.from(checkboxes).map((cb) =>
+          parseInt(cb.value, 10),
+        );
 
-          const payload = {
-            type: document.getElementById("type").value,
-            name: document.getElementById("name").value,
-            url: document.getElementById("url").value,
-            interval_seconds: parseInt(
-              document.getElementById("interval").value,
-              10,
-            ),
-            fail_threshold: parseInt(
-              document.getElementById("fail-threshold").value,
-              10,
-            ),
-            notifier_ids: notifier_ids,
-          };
+        const payload = {
+          type: document.getElementById("type").value,
+          name: document.getElementById("name").value,
+          url: document.getElementById("url").value,
+          interval_seconds: parseInt(
+            document.getElementById("interval").value,
+            10,
+          ),
+          fail_threshold: parseInt(
+            document.getElementById("fail-threshold").value,
+            10,
+          ),
+          notifier_ids: notifier_ids,
+        };
 
-          const url = id ? `/api/endpoints/${id}` : "/api/endpoints";
-          const method = id ? "PUT" : "POST";
+        const url = id ? `/api/endpoints/${id}` : "/api/endpoints";
+        const method = id ? "PUT" : "POST";
 
-          try {
-            const res = await fetch(url, {
-              method,
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-            if (!res.ok) {
-              const err = await res.json();
-              alert(err.error || "Failed to save");
-              return;
-            }
-            closeModal();
-            fetchEndpoints();
-          } catch (e) {
-            alert("Network error");
-          }
-        }
-
-        // --- Notifiers Logic ---
-        async function fetchNotifiers() {
-          if (
-            document.getElementById("view-notifiers").classList.contains("hidden")
-          )
-            return;
-          try {
-            const res = await fetch("/api/notifiers");
-            const data = await res.json();
-            globalNotifiers = data; // Update cache
-            renderNotifiers(data);
-          } catch (e) {
-            console.error("fetch notifiers error", e);
-          }
-        }
-
-        function renderNotifiers(notifiers) {
-          const container = document.getElementById("notifiers-container");
-          if (!notifiers || !notifiers.length) {
-            container.innerHTML = `<div class="col-span-full text-center py-16 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">No notifiers yet. Add Telegram or Pushover.</div>`;
+        try {
+          const res = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            alert(err.error || "Failed to save");
             return;
           }
+          closeModal();
+          fetchEndpoints();
+        } catch (e) {
+          alert("Network error");
+        }
+      }
 
-          container.innerHTML = notifiers
-            .map((n) => {
-              return `
+      // --- Notifiers Logic ---
+      async function fetchNotifiers() {
+        if (
+          document.getElementById("view-notifiers").classList.contains("hidden")
+        )
+          return;
+        try {
+          const res = await fetch("/api/notifiers");
+          const data = await res.json();
+          globalNotifiers = data; // Update cache
+          renderNotifiers(data);
+        } catch (e) {
+          console.error("fetch notifiers error", e);
+        }
+      }
+
+      function renderNotifiers(notifiers) {
+        const container = document.getElementById("notifiers-container");
+        if (!notifiers || !notifiers.length) {
+          container.innerHTML = `<div class="col-span-full text-center py-16 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">No notifiers yet. </div>`;
+          return;
+        }
+
+        container.innerHTML = notifiers
+          .map((n) => {
+            return `
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 transition flex flex-col h-full">
               <div class="flex items-center justify-between mb-2">
                 <h3 class="font-semibold text-gray-900 dark:text-white text-lg truncate pr-2">${escapeHtml(n.name)}</h3>
@@ -1010,52 +1100,52 @@
               </div>
             </div>
           `;
-            })
-            .join("");
-        }
+          })
+          .join("");
+      }
 
-        function openNotifierModal() {
-          document.getElementById("notifier-modal-title").textContent =
-            "Add Notifier";
-          document.getElementById("notifier-form").reset();
-          document.getElementById("notifier-id").value = "";
-          renderNotifierFields(); // render default type (TELEGRAM)
+      function openNotifierModal() {
+        document.getElementById("notifier-modal-title").textContent =
+          "Add Notifier";
+        document.getElementById("notifier-form").reset();
+        document.getElementById("notifier-id").value = "";
+        renderNotifierFields(); // render default type (TELEGRAM)
 
-          const modal = document.getElementById("notifier-modal");
-          modal.classList.remove("hidden");
-          modal.classList.add("flex");
-        }
+        const modal = document.getElementById("notifier-modal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
 
-        function editNotifier(n) {
-          document.getElementById("notifier-modal-title").textContent =
-            "Edit Notifier";
-          document.getElementById("notifier-id").value = n.id;
-          document.getElementById("notifier-name").value = n.name;
-          document.getElementById("notifier-type").value = n.type;
+      function editNotifier(n) {
+        document.getElementById("notifier-modal-title").textContent =
+          "Edit Notifier";
+        document.getElementById("notifier-id").value = n.id;
+        document.getElementById("notifier-name").value = n.name;
+        document.getElementById("notifier-type").value = n.type;
 
-          renderNotifierFields(n.config_json);
+        renderNotifierFields(n.config_json);
 
-          const modal = document.getElementById("notifier-modal");
-          modal.classList.remove("hidden");
-          modal.classList.add("flex");
-        }
+        const modal = document.getElementById("notifier-modal");
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
 
-        function closeNotifierModal() {
-          const modal = document.getElementById("notifier-modal");
-          modal.classList.add("hidden");
-          modal.classList.remove("flex");
-        }
+      function closeNotifierModal() {
+        const modal = document.getElementById("notifier-modal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
 
-        function renderNotifierFields(configJsonStr = "{}") {
-          const type = document.getElementById("notifier-type").value;
-          const container = document.getElementById("notifier-dynamic-fields");
-          let config = {};
-          try {
-            config = JSON.parse(configJsonStr);
-          } catch (e) {}
+      function renderNotifierFields(configJsonStr = "{}") {
+        const type = document.getElementById("notifier-type").value;
+        const container = document.getElementById("notifier-dynamic-fields");
+        let config = {};
+        try {
+          config = JSON.parse(configJsonStr);
+        } catch (e) {}
 
-          if (type === "TELEGRAM") {
-            container.innerHTML = `
+        if (type === "TELEGRAM") {
+          container.innerHTML = `
             <div>
               <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Bot Token</label>
               <input type="text" id="config-bot-token" required placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" value="${escapeHtml(config.bot_token)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -1066,8 +1156,8 @@
               <input type="text" id="config-chat-id" required placeholder="-1001234567890" value="${escapeHtml(config.chat_id)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
           `;
-          } else if (type === "PUSHOVER") {
-            container.innerHTML = `
+        } else if (type === "PUSHOVER") {
+          container.innerHTML = `
             <div>
               <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">App Token</label>
               <input type="text" id="config-app-token" required placeholder="azG9sYv..." value="${escapeHtml(config.app_token)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -1085,203 +1175,219 @@
               </select>
             </div>
           `;
-          }
+        } else if (type === "REDIS") {
+          container.innerHTML = `
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
+              <input type="text" id="config-address" required placeholder="localhost:6379" value="${escapeHtml(config.address) || "localhost:6379"}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Password (Optional)</label>
+              <input type="password" id="config-password" placeholder="" value="${escapeHtml(config.password)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">DB</label>
+                <input type="number" id="config-db" min="0" value="${config.db !== undefined ? config.db : 0}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Key Prefix</label>
+                <input type="text" id="config-key-prefix" placeholder="tinypulse" value="${escapeHtml(config.key_prefix) || "tinypulse"}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-lg p-3 text-xs text-gray-600 dark:text-gray-300">
+              <p class="font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                How it works
+              </p>
+              <p class="mt-1">Each alert increments a counter in Redis:</p>
+              <code class="block bg-white dark:bg-gray-800 px-2 py-1 rounded border border-amber-200 dark:border-amber-700 mt-1 font-mono">INCR {prefix}:endpoint:{id}:count</code>
+              <p class="mt-1">Also stores endpoint name, last title and message.</p>
+            </div>
+          `;
         }
+      }
 
-        async function saveNotifier(e) {
-          e.preventDefault();
-          const id = document.getElementById("notifier-id").value;
-          const type = document.getElementById("notifier-type").value;
+      async function saveNotifier(e) {
+        e.preventDefault();
+        const id = document.getElementById("notifier-id").value;
+        const type = document.getElementById("notifier-type").value;
 
-          let config = {};
-          if (type === "TELEGRAM") {
-            config = {
-              bot_token: document.getElementById("config-bot-token").value.trim(),
-              chat_id: document.getElementById("config-chat-id").value.trim(),
-            };
-          } else if (type === "PUSHOVER") {
-            config = {
-              app_token: document.getElementById("config-app-token").value.trim(),
-              user_key: document.getElementById("config-user-key").value.trim(),
-              priority:
-                parseInt(document.getElementById("config-priority").value, 10) ||
-                0,
-            };
-          }
-
-          const payload = {
-            name: document.getElementById("notifier-name").value,
-            type: type,
-            config_json: JSON.stringify(config),
+        let config = {};
+        if (type === "TELEGRAM") {
+          config = {
+            bot_token: document.getElementById("config-bot-token").value.trim(),
+            chat_id: document.getElementById("config-chat-id").value.trim(),
           };
-
-          const url = id ? `/api/notifiers/${id}` : "/api/notifiers";
-          const method = id ? "PUT" : "POST";
-
-          try {
-            const res = await fetch(url, {
-              method,
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-            if (!res.ok) {
-              const err = await res.json();
-              alert(err.error || "Failed to save notifier");
-              return;
-            }
-            closeNotifierModal();
-            fetchNotifiers();
-          } catch (e) {
-            alert("Network error");
-          }
+        } else if (type === "PUSHOVER") {
+          config = {
+            app_token: document.getElementById("config-app-token").value.trim(),
+            user_key: document.getElementById("config-user-key").value.trim(),
+            priority:
+              parseInt(document.getElementById("config-priority").value, 10) ||
+              0,
+          };
+        } else if (type === "REDIS") {
+          config = {
+            address: document.getElementById("config-address").value.trim(),
+            password: document.getElementById("config-password").value.trim(),
+            db: parseInt(document.getElementById("config-db").value, 10) || 0,
+            key_prefix:
+              document.getElementById("config-key-prefix").value.trim() ||
+              "tinypulse",
+          };
         }
 
-        async function deleteNotifier(id) {
-          if (
-            !confirm(
-              "Delete this notifier? Any endpoints using it will stop receiving alerts to this channel.",
-            )
-          )
+        const payload = {
+          name: document.getElementById("notifier-name").value,
+          type: type,
+          config_json: JSON.stringify(config),
+        };
+
+        const url = id ? `/api/notifiers/${id}` : "/api/notifiers";
+        const method = id ? "PUT" : "POST";
+
+        try {
+          const res = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            alert(err.error || "Failed to save notifier");
             return;
-          try {
-            await fetch(`/api/notifiers/${id}`, { method: "DELETE" });
-            fetchNotifiers();
-          } catch (e) {
-            alert("Failed to delete");
           }
+          closeNotifierModal();
+          fetchNotifiers();
+        } catch (e) {
+          alert("Network error");
         }
+      }
 
-        async function testNotifier(id) {
-          try {
-            const res = await fetch(`/api/notifiers/${id}/test`, {
-              method: "POST",
-            });
-            if (!res.ok) {
-              const err = await res.json();
-              alert(err.error || "Test failed");
-              return;
-            }
-            alert("Test notification sent successfully!");
-          } catch (e) {
-            alert("Network error during test");
+      async function deleteNotifier(id) {
+        if (
+          !confirm(
+            "Delete this notifier? Any endpoints using it will stop receiving alerts to this channel.",
+          )
+        )
+          return;
+        try {
+          await fetch(`/api/notifiers/${id}`, { method: "DELETE" });
+          fetchNotifiers();
+        } catch (e) {
+          alert("Failed to delete");
+        }
+      }
+
+      async function testNotifier(id) {
+        try {
+          const res = await fetch(`/api/notifiers/${id}/test`, {
+            method: "POST",
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            alert(err.error || "Test failed");
+            return;
           }
+          alert("Test notification sent successfully!");
+        } catch (e) {
+          alert("Network error during test");
         }
+      }
 
-        // --- Helpers (Pause, Delete, History) ---
-        async function loadHistory(id) {
-          try {
-            const res = await fetch(`/api/endpoints/${id}/history?limit=40`);
-            const data = await res.json();
-            const container = document.getElementById(`history-${id}`);
-            if (!container) return;
-            if (!Array.isArray(data) || data.length === 0) {
-              container.innerHTML = `<span class="text-xs text-gray-400">No history yet</span>`;
-              return;
-            }
-            // Reverse so oldest is leftmost
-            const items = data.slice().reverse();
-            container.innerHTML = items
-              .map((h) => {
-                const color = h.is_up ? "bg-green-500" : "bg-red-500";
-                const timeStr = new Date(h.checked_at).toLocaleString();
-                return `<div title="${timeStr}" class="w-1.5 h-3 sm:w-2 sm:h-3.5 rounded-sm ${color} flex-shrink min-w-[2px] opacity-80 hover:opacity-100 transition-opacity"></div>`;
-              })
-              .join("");
-          } catch (e) {
-            console.error("history fetch error", e);
-          }
+      // --- Helpers (Pause, Delete, History) ---
+
+      function timeAgo(dateString) {
+        if (!dateString) return "Never";
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        if (seconds < 10) return "Just now";
+        if (seconds < 60) return `${seconds}s ago`;
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h ago`;
+        const days = Math.floor(hours / 24);
+        if (days < 30) return `${days}d ago`;
+        return date.toLocaleDateString();
+      }
+
+      function escapeHtml(text) {
+        if (!text) return "";
+        return String(text)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      async function togglePause(id) {
+        try {
+          await fetch(`/api/endpoints/${id}/pause`, { method: "POST" });
+          fetchEndpoints();
+        } catch (e) {
+          alert("Failed to pause/resume");
         }
+      }
 
-        function timeAgo(dateString) {
-          if (!dateString) return "Never";
-          const date = new Date(dateString);
-          const now = new Date();
-          const seconds = Math.floor((now - date) / 1000);
-          if (seconds < 10) return "Just now";
-          if (seconds < 60) return `${seconds}s ago`;
-          const minutes = Math.floor(seconds / 60);
-          if (minutes < 60) return `${minutes}m ago`;
-          const hours = Math.floor(minutes / 60);
-          if (hours < 24) return `${hours}h ago`;
-          const days = Math.floor(hours / 24);
-          if (days < 30) return `${days}d ago`;
-          return date.toLocaleDateString();
+      async function deleteEndpoint(id) {
+        if (!confirm("Delete this endpoint?")) return;
+        try {
+          await fetch(`/api/endpoints/${id}`, { method: "DELETE" });
+          fetchEndpoints();
+        } catch (e) {
+          alert("Failed to delete");
         }
+      }
 
-        function escapeHtml(text) {
-          if (!text) return "";
-          return String(text)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-        }
-
-        async function togglePause(id) {
-          try {
-            await fetch(`/api/endpoints/${id}/pause`, { method: "POST" });
-            fetchEndpoints();
-          } catch (e) {
-            alert("Failed to pause/resume");
-          }
-        }
-
-        async function deleteEndpoint(id) {
-          if (!confirm("Delete this endpoint?")) return;
-          try {
-            await fetch(`/api/endpoints/${id}`, { method: "DELETE" });
-            fetchEndpoints();
-          } catch (e) {
-            alert("Failed to delete");
-          }
-        }
-
-        async function showDetail(id, name) {
-          try {
-            const res = await fetch(`/api/endpoints/${id}/checks?limit=50`);
-            const checks = await res.json();
-            document.getElementById("detail-title").textContent =
-              `History: ${name}`;
-            const tbody = document.getElementById("detail-body");
-            if (!checks.length) {
-              tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">No checks yet.</td></tr>`;
-            } else {
-              tbody.innerHTML = checks
-                .map((c) => {
-                  const timeStr = new Date(c.checked_at).toLocaleString();
-                  const status = c.is_up
-                    ? '<span class="text-green-600 font-medium">UP</span>'
-                    : '<span class="text-red-600 font-medium">DOWN</span>';
-                  const code = c.status_code !== null ? c.status_code : "—";
-                  return `<tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+      async function showDetail(id, name) {
+        try {
+          const res = await fetch(`/api/endpoints/${id}/checks?limit=50`);
+          const checks = await res.json();
+          document.getElementById("detail-title").textContent =
+            `History: ${name}`;
+          const tbody = document.getElementById("detail-body");
+          if (!checks.length) {
+            tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">No checks yet.</td></tr>`;
+          } else {
+            tbody.innerHTML = checks
+              .map((c) => {
+                const timeStr = new Date(c.checked_at).toLocaleString();
+                const status = c.is_up
+                  ? '<span class="text-green-600 font-medium">UP</span>'
+                  : '<span class="text-red-600 font-medium">DOWN</span>';
+                const code = c.status_code !== null ? c.status_code : "—";
+                return `<tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                 <td class="px-4 py-3 whitespace-nowrap">${timeStr}</td>
                 <td class="px-4 py-3">${status}</td>
                 <td class="px-4 py-3">${code}</td>
                 <td class="px-4 py-3">${c.response_time_ms} ms</td>
               </tr>`;
-                })
-                .join("");
-            }
-            const modal = document.getElementById("detail-modal");
-            modal.classList.remove("hidden");
-            modal.classList.add("flex");
-          } catch (e) {
-            alert("Failed to load history");
+              })
+              .join("");
           }
-        }
-
-        function closeDetail() {
           const modal = document.getElementById("detail-modal");
-          modal.classList.add("hidden");
-          modal.classList.remove("flex");
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        } catch (e) {
+          alert("Failed to load history");
         }
+      }
 
-        // Init
+      function closeDetail() {
+        const modal = document.getElementById("detail-modal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+
+      // Init
+      fetchEndpoints();
+      refreshInterval = setInterval(() => {
         fetchEndpoints();
-        refreshInterval = setInterval(() => {
-          fetchEndpoints();
-        }, 5000);
+      }, 5000);
     </script>
   </body>
 </html>

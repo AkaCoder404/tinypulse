@@ -23,13 +23,22 @@ type Check struct {
 	CheckedAt      time.Time `json:"checked_at"`
 }
 
+type MinimalCheck struct {
+	IsUp           bool      `json:"is_up"`
+	CheckedAt      time.Time `json:"checked_at"`
+	StatusCode     *int      `json:"status_code,omitempty"`
+	ResponseTimeMs int       `json:"response_time_ms,omitempty"`
+}
+
 type EndpointWithStats struct {
 	Endpoint
-	StatusCode     *int       `json:"status_code"`
-	ResponseTimeMs *int       `json:"response_time_ms"`
-	IsUp           *bool      `json:"is_up"`
-	CheckedAt      *time.Time `json:"checked_at"`
-	Uptime30d      *float64   `json:"uptime_30d"`
+	StatusCode     *int           `json:"status_code"`
+	ResponseTimeMs *int           `json:"response_time_ms"`
+	IsUp           *bool          `json:"is_up"`
+	CheckedAt      *time.Time     `json:"checked_at"`
+	Uptime24h      *float64       `json:"uptime_24h"`
+	Uptime30d      *float64       `json:"uptime_30d"`
+	RecentChecks   []MinimalCheck `json:"recent_checks"`
 }
 
 type Notifier struct {

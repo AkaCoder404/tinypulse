@@ -56,7 +56,7 @@ sudo systemctl start tinypulse
 
 When you start a newer version of TinyPulse, it automatically handles any required database upgrades (e.g., if a new feature requires a new column in the database).
 
-**Data Safety:** Before making *any* changes to your database schema, TinyPulse creates a safe, point-in-time backup in the same directory (e.g., `uptime_backup_v1.db`).
+**Data Safety:** Before making *any* changes to your database schema, TinyPulse creates a safe, point-in-time backup in the same directory (e.g., `tinypulse_backup_v1.db`).
 
 ### How to Rollback
 
@@ -68,10 +68,10 @@ If a new version has a bug or an upgrade fails, you can safely revert your data:
    ```
 2. Delete the partially-upgraded database:
    ```bash
-   rm /opt/tinypulse/uptime.db
+   rm /opt/tinypulse/tinypulse.db
    ```
 3. Restore the automated backup:
    ```bash
-   mv /opt/tinypulse/uptime_backup_v1.db /opt/tinypulse/uptime.db
+   mv /opt/tinypulse/tinypulse_backup_v1.db /opt/tinypulse/uptime.db
    ```
 4. Replace the new binary with the older version you were previously running, and restart the service.

@@ -19,23 +19,27 @@ type endpointState struct {
 	consecutiveFails int
 }
 
+const resultsBufferCapacity = 4096
+
 // Manager orchestrates one goroutine per monitored endpoint.
 type Manager struct {
-	db         *db.DB
-	client     *http.Client
-	dispatcher *notifier.Dispatcher
-	mu         sync.RWMutex
-	workers    map[int64]context.CancelFunc
-	state      map[int64]endpointState
-	stop       context.CancelFunc
-	baseCtx    context.Context
-	results    chan *model.Check
+	db           *db.DB
+	client       *http.Client
+	dispatcher   *notifier.Dispatcher
+	StateManager *StateManager
+	mu           sync.RWMutex
+	workers      map[int64]context.CancelFunc
+	state        map[int64]endpointState
+	stop         context.CancelFunc
+	baseCtx      context.Context
+	results      chan *model.Check
 }
 
 func New(database *db.DB, dispatcher *notifier.Dispatcher) *Manager {
 	return &Manager{
-		db:         database,
-		dispatcher: dispatcher,
+		db:           database,
+		dispatcher:   dispatcher,
+		StateManager: NewStateManager(database),
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 			Transport: &http.Transport{
@@ -46,7 +50,7 @@ func New(database *db.DB, dispatcher *notifier.Dispatcher) *Manager {
 		},
 		workers: make(map[int64]context.CancelFunc),
 		state:   make(map[int64]endpointState),
-		results: make(chan *model.Check, 1024),
+		results: make(chan *model.Check, resultsBufferCapacity),
 	}
 }
 
@@ -56,6 +60,10 @@ func (m *Manager) Start(ctx context.Context) error {
 	m.stop = cancel
 	m.baseCtx = ctx
 
+	if err := m.StateManager.Hydrate(ctx); err != nil {
+		return fmt.Errorf("hydrate state manager: %w", err)
+	}
+
 	endpoints, err := m.db.ListActiveEndpoints(ctx)
 	if err != nil {
 		return fmt.Errorf("list active endpoints: %w", err)
@@ -64,6 +72,7 @@ func (m *Manager) Start(ctx context.Context) error {
 		m.spawn(ctx, ep)
 	}
 
+	go m.StateManager.BackgroundAggregator(ctx)
 	go m.dbWriterLoop(ctx)
 	go m.cleanupLoop(ctx)
 	return nil
@@ -101,6 +110,7 @@ func (m *Manager) Delete(id int64) {
 	m.mu.Lock()
 	delete(m.state, id)
 	m.mu.Unlock()
+	m.StateManager.Delete(id)
 }
 
 // Pause stops monitoring for an endpoint.
@@ -177,12 +187,15 @@ func (m *Manager) check(ctx context.Context, ep model.Endpoint, checker Checker)
 		StatusCode:     statusCode,
 		ResponseTimeMs: responseTimeMs,
 		IsUp:           isUp,
+		CheckedAt:      time.Now().UTC(),
 	}
+
+	m.StateManager.UpdateOnCheck(check)
 
 	select {
 	case m.results <- check:
 	default:
-		slog.Warn("db writer channel full, dropping check metric", "endpoint_id", ep.ID)
+		slog.Warn("db writer channel full, dropping historical check metric", "endpoint_id", ep.ID)
 	}
 
 	m.mu.Lock()
@@ -211,10 +224,10 @@ func (m *Manager) check(ctx context.Context, ep model.Endpoint, checker Checker)
 
 	if isUp && !currentState.isUp {
 		slog.Info("endpoint recovered", "endpoint_id", ep.ID, "name", ep.Name, "url", ep.URL)
-		m.dispatcher.SendAlert(ep.ID, "✅ Service Recovered", fmt.Sprintf("%s is back online.", ep.Name))
+		m.dispatcher.SendAlert(ep.ID, ep.Name, "✅ Service Recovered", fmt.Sprintf("%s is back online.", ep.Name))
 	} else if !isUp && newState.consecutiveFails == ep.FailThreshold {
 		slog.Info("endpoint down threshold reached", "endpoint_id", ep.ID, "name", ep.Name, "url", ep.URL, "status_code", statusCode)
-		m.dispatcher.SendAlert(ep.ID, "🚨 Service Down", fmt.Sprintf("%s is offline.\nURL: %s", ep.Name, ep.URL))
+		m.dispatcher.SendAlert(ep.ID, ep.Name, "🚨 Service Down", fmt.Sprintf("%s is offline.\nURL: %s", ep.Name, ep.URL))
 	}
 }
 
@@ -240,6 +253,7 @@ func (m *Manager) dbWriterLoop(ctx context.Context) {
 		case check := <-m.results:
 			if err := m.db.RecordCheck(ctx, check); err != nil {
 				slog.Error("failed to record check", "endpoint_id", check.EndpointID, "error", err)
+				continue
 			}
 		case <-ctx.Done():
 			return

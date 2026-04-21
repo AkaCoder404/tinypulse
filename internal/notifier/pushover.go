@@ -35,7 +35,7 @@ func (p *Pushover) Type() string {
 	return "PUSHOVER"
 }
 
-func (p *Pushover) Send(ctx context.Context, title, message string) error {
+func (p *Pushover) Send(ctx context.Context, endpointID int64, endpointName, title, message string) error {
 	data := url.Values{}
 	data.Set("token", p.AppToken)
 	data.Set("user", p.UserKey)

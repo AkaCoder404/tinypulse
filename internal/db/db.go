@@ -32,6 +32,12 @@ func (d *DB) migrate() error {
 	if _, err := d.conn.Exec(`PRAGMA journal_mode = WAL;`); err != nil {
 		return fmt.Errorf("set wal mode: %w", err)
 	}
+	if _, err := d.conn.Exec(`PRAGMA synchronous = NORMAL;`); err != nil {
+		return fmt.Errorf("set synchronous mode: %w", err)
+	}
+	if _, err := d.conn.Exec(`PRAGMA busy_timeout = 5000;`); err != nil {
+		return fmt.Errorf("set busy timeout: %w", err)
+	}
 	if _, err := d.conn.Exec(`PRAGMA foreign_keys = ON;`); err != nil {
 		return fmt.Errorf("enable foreign keys: %w", err)
 	}
@@ -45,7 +51,7 @@ func (d *DB) migrate() error {
 	var currentVersion int
 	_ = d.conn.QueryRow(`SELECT MAX(version) FROM schema_version`).Scan(&currentVersion)
 
-	targetVersion := 2
+	targetVersion := 3
 
 	// Special case: If currentVersion is 0, but the endpoints table already exists,
 	// this is an existing v0.1.0-beta.1 database updating to the new versioning system.
@@ -124,7 +130,16 @@ func (d *DB) migrate() error {
 		currentVersion = 2
 	}
 
-	// 6. Save the new version state
+	// 6. Apply V3 (Add covering index for fast background stats calculation)
+	if currentVersion < 3 {
+		slog.Info("applying v3 schema migration (adding covering index)")
+		if _, err := d.conn.Exec(`CREATE INDEX IF NOT EXISTS idx_checks_endpoint_checked_up ON checks(endpoint_id, checked_at, is_up);`); err != nil {
+			return fmt.Errorf("v3 migration failed: %w", err)
+		}
+		currentVersion = 3
+	}
+
+	// 7. Save the new version state
 	if currentVersion == targetVersion {
 		d.conn.Exec(`DELETE FROM schema_version`)
 		d.conn.Exec(`INSERT INTO schema_version (version) VALUES (?)`, targetVersion)

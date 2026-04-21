@@ -70,10 +70,34 @@ type jsonError string
 func (e jsonError) Error() string { return string(e) }
 
 func (s *Server) listEndpoints(w http.ResponseWriter, r *http.Request) {
-	endpoints, err := s.db.ListEndpointsWithStats(r.Context())
+	rawEndpoints, err := s.db.ListEndpoints(r.Context())
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
+	}
+
+	statsMap := s.manager.StateManager.GetDashboardStats()
+	
+	endpoints := make([]model.EndpointWithStats, len(rawEndpoints))
+	for i, ep := range rawEndpoints {
+		endpoints[i].Endpoint = ep
+		
+		if stats, exists := statsMap[ep.ID]; exists {
+			endpoints[i].StatusCode = stats.LastStatusCode
+			endpoints[i].ResponseTimeMs = stats.LastResponseMs
+			endpoints[i].IsUp = stats.LastIsUp
+			endpoints[i].CheckedAt = stats.LastCheckedAt
+			endpoints[i].Uptime24h = stats.Uptime24h
+			endpoints[i].Uptime30d = stats.Uptime30d
+			
+			if len(stats.RecentChecks) > 0 {
+				endpoints[i].RecentChecks = stats.RecentChecks
+			} else {
+				endpoints[i].RecentChecks = []model.MinimalCheck{}
+			}
+		} else {
+			endpoints[i].RecentChecks = []model.MinimalCheck{}
+		}
 	}
 
 	notifierMap, err := s.db.GetEndpointNotifierIDs(r.Context())
@@ -369,7 +393,7 @@ func (s *Server) testNotifier(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := provider.Send(r.Context(), "🧪 TinyPulse Test", "This is a test notification from TinyPulse!"); err != nil {
+	if err := provider.Send(r.Context(), 0, "test", "🧪 TinyPulse Test", "This is a test notification from TinyPulse!"); err != nil {
 		respondError(w, http.StatusInternalServerError, fmt.Sprintf("test failed: %v", err))
 		return
 	}
