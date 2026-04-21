@@ -37,6 +37,10 @@ func NewStateManager(database *db.DB) *StateManager {
 func (sm *StateManager) Hydrate(ctx context.Context) error {
 	slog.Info("hydrating state manager from database...")
 
+	// NOTE: Known issue when an endpoint is paused
+	// on restart, the cache is not hydrated unless
+	// use: ListEndpoints. We use ListActiveEndpoints for now to
+	// avoid unnecessary hydration of paused endpoints.
 	endpoints, err := sm.db.ListActiveEndpoints(ctx)
 	if err != nil {
 		return err
@@ -45,7 +49,7 @@ func (sm *StateManager) Hydrate(ctx context.Context) error {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 
-	// TODO(Performance): This currently executes 3 queries per endpoint (O(N)). 
+	// TODO(Performance): This currently executes 3 queries per endpoint (O(N)).
 	// For <1000 endpoints, SQLite handles this sequentially in ~100ms, making it acceptable for startup.
 	// If TinyPulse scales to thousands of endpoints, this loop should be refactored into two bulk queries:
 	// 1. Conditional aggregation for 24h/30d uptimes (SELECT ... AVG(CASE WHEN ...)).
@@ -70,13 +74,13 @@ func (sm *StateManager) Hydrate(ctx context.Context) error {
 			// Latest status
 			latest := recent[0]
 			stats.LastStatusCode = latest.StatusCode
-			
+
 			respMs := latest.ResponseTimeMs
 			stats.LastResponseMs = &respMs
-			
+
 			isUp := latest.IsUp
 			stats.LastIsUp = &isUp
-			
+
 			checkedAt := latest.CheckedAt
 			stats.LastCheckedAt = &checkedAt
 		}
@@ -85,11 +89,11 @@ func (sm *StateManager) Hydrate(ctx context.Context) error {
 		if err == nil {
 			stats.Uptime24h = up24
 		}
-		
-		up30, err := sm.db.CalculateUptime(ctx, ep.ID, 24*30)
-		if err == nil {
-			stats.Uptime30d = up30
-		}
+
+		// up30, err := sm.db.CalculateUptime(ctx, ep.ID, 24*30)
+		// if err == nil {
+		// 	stats.Uptime30d = up30
+		// }
 
 		sm.state[ep.ID] = stats
 	}
@@ -111,13 +115,13 @@ func (sm *StateManager) UpdateOnCheck(check *model.Check) {
 	}
 
 	stats.LastStatusCode = check.StatusCode
-	
+
 	respMs := check.ResponseTimeMs
 	stats.LastResponseMs = &respMs
-	
+
 	isUp := check.IsUp
 	stats.LastIsUp = &isUp
-	
+
 	checkedAt := check.CheckedAt
 	stats.LastCheckedAt = &checkedAt
 
@@ -133,7 +137,7 @@ func (sm *StateManager) UpdateOnCheck(check *model.Check) {
 }
 
 func (sm *StateManager) BackgroundAggregator(ctx context.Context) {
-	ticker := time.NewTicker(5 * time.Minute)
+	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
 	for {
@@ -156,16 +160,16 @@ func (sm *StateManager) refreshAverages(ctx context.Context) {
 
 	for _, id := range ids {
 		up24, err24 := sm.db.CalculateUptime(ctx, id, 24)
-		up30, err30 := sm.db.CalculateUptime(ctx, id, 24*30)
+		// up30, err30 := sm.db.CalculateUptime(ctx, id, 24*30) // Commented out to save DB cycles on 1m ticker
 
 		sm.mu.Lock()
 		if stats, exists := sm.state[id]; exists {
 			if err24 == nil && up24 != nil {
 				stats.Uptime24h = up24
 			}
-			if err30 == nil && up30 != nil {
-				stats.Uptime30d = up30
-			}
+			// if err30 == nil && up30 != nil {
+			// 	stats.Uptime30d = up30
+			// }
 		}
 		sm.mu.Unlock()
 	}
@@ -177,7 +181,7 @@ func (s *EndpointStats) Clone() *EndpointStats {
 	}
 
 	copyStats := *s
-	
+
 	if s.LastStatusCode != nil {
 		code := *s.LastStatusCode
 		copyStats.LastStatusCode = &code

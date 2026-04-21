@@ -9,7 +9,7 @@ A tiny, single-binary, self-hosted uptime monitor for HTTP/HTTPS and TCP endpoin
 
 ## Features
 
-Why use TinyPulse over other uptime monitors? 
+Why use TinyPulse?
 
 - **Tiny Footprint:** ~12 MB binary, < 30 MB RAM at rest.
 - **Near Zero Dependencies:** Single static Go binary with embedded Tailwind CSS frontend. No Docker, no Node.js, no PostgreSQL.
@@ -17,7 +17,7 @@ Why use TinyPulse over other uptime monitors?
 - **Efficient Data Layer:** Pure-Go SQLite with WAL mode, chunked pruning, and decoupled asynchronous writers. Every check result is stored locally in a single `.db` file.
 - **High Performance:** An in-memory cache and background aggregation engine guarantee instant dashboard load times, even with years of historical data.
 - **Massive Concurrency:** One lightweight, hardened goroutine per endpoint. Effortlessly monitor 1,000+ endpoints concurrently on a single CPU core.
-- **Uptime History:** 30-day uptime % and a visual ping hit/miss chart per endpoint. 90 day auto cleanup.
+- **Uptime History:** 24 hour uptime % and a visual ping hit/miss chart per endpoint. 90 day auto cleanup.
 - **Alert Notifications:** Built-in support for Telegram, Pushover (and more) alerts with per-endpoint linking.
 - **Customizable Thresholds:** Configure exactly how many consecutive failures trigger an alert per endpoint.
 - **Built-in Security:** Secure the dashboard and API instantly with HTTP Basic Auth (`TINYPULSE_PASSWORD`).

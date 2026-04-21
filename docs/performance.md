@@ -25,3 +25,6 @@ time=2026-04-21T16:12:25.614+08:00 level=INFO msg="hydrating state manager from 
 time=2026-04-21T16:12:30.755+08:00 level=INFO msg="state manager hydrated successfully" endpoints=1000
 time=2026-04-21T16:12:30.758+08:00 level=INFO msg="server starting" addr=:3000
 ```
+
+
+> On a Mac M1 (development device) - with the datapoints as above - had about ~170MB-200MB.

@@ -731,7 +731,7 @@
               : "bg-gray-300";
           const statusText = isUp ? "UP" : isDown ? "DOWN" : "UNKNOWN";
           const uptime =
-            ep.uptime_30d !== null ? ep.uptime_30d.toFixed(2) + "%" : "—";
+            ep.uptime_24h !== null ? ep.uptime_24h.toFixed(2) + "%" : "—";
           const respTime =
             ep.response_time_ms !== null ? ep.response_time_ms + " ms" : "—";
           const lastChecked = timeAgo(ep.checked_at);
@@ -867,7 +867,7 @@
                     <span class="text-gray-300 dark:text-gray-600 mx-1">·</span>
                     <span id="resp-text-${ep.id}">${respTime}</span>
                     <span class="text-gray-300 dark:text-gray-600 mx-1">·</span>
-                    <span id="uptime-text-${ep.id}" title="30-day Uptime">${uptime}</span>
+                    <span id="uptime-text-${ep.id}" title="24-hour Uptime">${uptime}</span>
                     <span class="text-gray-300 dark:text-gray-600 mx-1">·</span>
                     <span id="checked-text-${ep.id}" title="${lastCheckedTitle}">${lastChecked}</span>
                   </div>
