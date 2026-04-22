@@ -19,7 +19,7 @@ type Pushover struct {
 }
 
 func init() {
-	Register("PUSHOVER", func(configJSON string) (Provider, error) {
+	Register("pushover", func(configJSON string) (Provider, error) {
 		var p Pushover
 		if err := json.Unmarshal([]byte(configJSON), &p); err != nil {
 			return nil, fmt.Errorf("unmarshal pushover config: %w", err)
@@ -32,7 +32,7 @@ func init() {
 }
 
 func (p *Pushover) Type() string {
-	return "PUSHOVER"
+	return "pushover"
 }
 
 func (p *Pushover) Send(ctx context.Context, endpointID int64, endpointName, title, message string) error {

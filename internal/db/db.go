@@ -51,7 +51,7 @@ func (d *DB) migrate() error {
 	var currentVersion int
 	_ = d.conn.QueryRow(`SELECT MAX(version) FROM schema_version`).Scan(&currentVersion)
 
-	targetVersion := 3
+	targetVersion := 4
 
 	// Special case: If currentVersion is 0, but the endpoints table already exists,
 	// this is an existing v0.1.0-beta.1 database updating to the new versioning system.
@@ -137,6 +137,30 @@ func (d *DB) migrate() error {
 			return fmt.Errorf("v3 migration failed: %w", err)
 		}
 		currentVersion = 3
+	}
+
+	// 8. Apply V4 (Add uid and source for YAML config provisioning)
+	if currentVersion < 4 {
+		slog.Info("applying v4 schema migration (adding config provisioning columns)")
+
+		v4Queries := []string{
+			// Add columns to endpoints
+			`ALTER TABLE endpoints ADD COLUMN uid TEXT;`,
+			`ALTER TABLE endpoints ADD COLUMN source TEXT NOT NULL DEFAULT 'ui';`,
+			`CREATE UNIQUE INDEX IF NOT EXISTS idx_endpoints_uid ON endpoints(uid);`,
+
+			// Add columns to notifiers
+			`ALTER TABLE notifiers ADD COLUMN uid TEXT;`,
+			`ALTER TABLE notifiers ADD COLUMN source TEXT NOT NULL DEFAULT 'ui';`,
+			`CREATE UNIQUE INDEX IF NOT EXISTS idx_notifiers_uid ON notifiers(uid);`,
+		}
+
+		for _, query := range v4Queries {
+			if _, err := d.conn.Exec(query); err != nil {
+				return fmt.Errorf("v4 migration failed on query %q: %w", query, err)
+			}
+		}
+		currentVersion = 4
 	}
 
 	// 7. Save the new version state

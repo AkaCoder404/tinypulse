@@ -17,7 +17,7 @@ type Telegram struct {
 }
 
 func init() {
-	Register("TELEGRAM", func(configJSON string) (Provider, error) {
+	Register("telegram", func(configJSON string) (Provider, error) {
 		var t Telegram
 		if err := json.Unmarshal([]byte(configJSON), &t); err != nil {
 			return nil, fmt.Errorf("unmarshal telegram config: %w", err)
@@ -30,7 +30,7 @@ func init() {
 }
 
 func (t *Telegram) Type() string {
-	return "TELEGRAM"
+	return "telegram"
 }
 
 func (t *Telegram) Send(ctx context.Context, endpointID int64, endpointName, title, message string) error {

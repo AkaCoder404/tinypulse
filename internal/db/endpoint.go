@@ -11,7 +11,7 @@ func (d *DB) CreateEndpoint(ctx context.Context, ep *model.Endpoint) error {
 		ep.Type = "http"
 	}
 	res, err := d.conn.ExecContext(ctx,
-		`INSERT INTO endpoints (type, name, url, interval_seconds, fail_threshold, paused) VALUES (?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO endpoints (type, name, url, interval_seconds, fail_threshold, paused, source) VALUES (?, ?, ?, ?, ?, ?, 'ui')`,
 		ep.Type, ep.Name, ep.URL, ep.IntervalSeconds, ep.FailThreshold, ep.Paused)
 	if err != nil {
 		return err
@@ -29,9 +29,9 @@ func (d *DB) CreateEndpoint(ctx context.Context, ep *model.Endpoint) error {
 
 func (d *DB) GetEndpoint(ctx context.Context, id int64) (*model.Endpoint, error) {
 	row := d.conn.QueryRowContext(ctx,
-		`SELECT id, type, name, url, interval_seconds, fail_threshold, paused, created_at FROM endpoints WHERE id = ?`, id)
+		`SELECT id, uid, source, type, name, url, interval_seconds, fail_threshold, paused, created_at FROM endpoints WHERE id = ?`, id)
 	ep := &model.Endpoint{}
-	err := row.Scan(&ep.ID, &ep.Type, &ep.Name, &ep.URL, &ep.IntervalSeconds, &ep.FailThreshold, &ep.Paused, &ep.CreatedAt)
+	err := row.Scan(&ep.ID, &ep.UID, &ep.Source, &ep.Type, &ep.Name, &ep.URL, &ep.IntervalSeconds, &ep.FailThreshold, &ep.Paused, &ep.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (d *DB) TogglePause(ctx context.Context, id int64) (bool, error) {
 
 func (d *DB) ListActiveEndpoints(ctx context.Context) ([]model.Endpoint, error) {
 	rows, err := d.conn.QueryContext(ctx,
-		`SELECT id, type, name, url, interval_seconds, fail_threshold, paused, created_at FROM endpoints WHERE paused = 0`)
+		`SELECT id, uid, source, type, name, url, interval_seconds, fail_threshold, paused, created_at FROM endpoints WHERE paused = 0`)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (d *DB) ListActiveEndpoints(ctx context.Context) ([]model.Endpoint, error) 
 	var endpoints []model.Endpoint
 	for rows.Next() {
 		var ep model.Endpoint
-		if err := rows.Scan(&ep.ID, &ep.Type, &ep.Name, &ep.URL, &ep.IntervalSeconds, &ep.FailThreshold, &ep.Paused, &ep.CreatedAt); err != nil {
+		if err := rows.Scan(&ep.ID, &ep.UID, &ep.Source, &ep.Type, &ep.Name, &ep.URL, &ep.IntervalSeconds, &ep.FailThreshold, &ep.Paused, &ep.CreatedAt); err != nil {
 			return nil, err
 		}
 		endpoints = append(endpoints, ep)
@@ -85,7 +85,7 @@ func (d *DB) ListActiveEndpoints(ctx context.Context) ([]model.Endpoint, error) 
 
 func (d *DB) ListEndpoints(ctx context.Context) ([]model.Endpoint, error) {
 	rows, err := d.conn.QueryContext(ctx,
-		`SELECT id, type, name, url, interval_seconds, fail_threshold, paused, created_at FROM endpoints ORDER BY created_at DESC`)
+		`SELECT id, uid, source, type, name, url, interval_seconds, fail_threshold, paused, created_at FROM endpoints ORDER BY created_at DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (d *DB) ListEndpoints(ctx context.Context) ([]model.Endpoint, error) {
 	var endpoints []model.Endpoint
 	for rows.Next() {
 		var ep model.Endpoint
-		if err := rows.Scan(&ep.ID, &ep.Type, &ep.Name, &ep.URL, &ep.IntervalSeconds, &ep.FailThreshold, &ep.Paused, &ep.CreatedAt); err != nil {
+		if err := rows.Scan(&ep.ID, &ep.UID, &ep.Source, &ep.Type, &ep.Name, &ep.URL, &ep.IntervalSeconds, &ep.FailThreshold, &ep.Paused, &ep.CreatedAt); err != nil {
 			return nil, err
 		}
 		endpoints = append(endpoints, ep)

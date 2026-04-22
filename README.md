@@ -54,11 +54,83 @@ make build
 
 TinyPulse can be configured via flags or environment variables.
 
-| Flag        | Env Var              | Default       | Description                                     |
-| ----------- | -------------------- | ------------- | ----------------------------------------------- |
-| `-addr`     | `TINYPULSE_ADDR`     | `:8080`       | HTTP listen address                             |
-| `-db`       | `TINYPULSE_DB`       | `./uptime.db` | SQLite database path                            |
-| `-password` | `TINYPULSE_PASSWORD` | *(empty)*     | Enables Basic Auth (Username is always `admin`) |
+| Flag            | Env Var              | Default          | Description                                     |
+| --------------- | -------------------- | ---------------- | ----------------------------------------------- |
+| `-addr`         | `TINYPULSE_ADDR`     | `:8080`          | HTTP listen address                             |
+| `-db`           | `TINYPULSE_DB`       | `./tinypulse.db` | SQLite database path                            |
+| `-password`     | `TINYPULSE_PASSWORD` | *(empty)*        | Enables Basic Auth (Username is always `admin`) |
+| `-config`       | `TINYPULSE_CONFIG`   | *(empty)*        | Path to a YAML configuration file               |
+| `-dry-run`      | *(none)*             | `false`          | Parse config, preview DB changes, and exit      |
+| `-eject-config` | *(none)*             | `false`          | Unlock config-managed items back to UI control  |
+| `-export-config`| *(none)*             | *(empty)*        | Export current database to a YAML config file   |
+
+### Configuration as Code (YAML)
+
+TinyPulse supports declarative provisioning via a YAML configuration file. This allows you to manage your endpoints and notifiers using GitOps or CI/CD pipelines alongside your existing UI-created items. 
+
+When you define an item in the YAML file:
+1. It is automatically created or updated in the database on startup.
+2. It becomes **Read-Only** in the web dashboard (a purple `Config` badge will appear).
+3. If you remove it from the YAML file, it is safely deleted from the database on the next startup.
+
+*Any items you create manually through the web UI are completely safe and will not be touched by the YAML sync.*
+
+#### Usage
+
+Create a `config.yml` (see [example_config.yml](example_config.yml) for a full example):
+
+```yaml
+endpoints:
+  my_website:
+    name: "My Website"
+    type: "http"
+    url: "https://example.com"
+    interval_seconds: 60
+    notifiers:
+      - telegram_ops
+
+notifiers:
+  telegram_ops:
+    name: "Ops Team Telegram"
+    type: "telegram"
+    config:
+      bot_token: "${TELEGRAM_BOT_TOKEN}" # Supports environment variables!
+      chat_id: "-1001234567890"
+```
+
+Start TinyPulse with the config flag:
+```bash
+TELEGRAM_BOT_TOKEN="123:abc" ./tinypulse -config config.yml
+```
+
+#### Dry Run
+
+You can safely preview what changes the YAML file will apply to your database without actually writing anything to the disk. This is perfect for CI/CD validation.
+
+```bash
+./tinypulse -config config.yml -dry-run
+```
+
+#### Exporting Configuration
+
+If you have already set up monitors and notifiers using the Web UI and want to transition to a Configuration-as-Code workflow, you can export your current database state to a YAML file:
+
+```bash
+./tinypulse -export-config my_new_config.yml
+```
+
+This will generate a ready-to-use YAML file containing all your existing endpoints and notifiers. You can then use this file to start TinyPulse in the future.
+
+#### Ejecting Configuration
+
+If you start the server *without* a `-config` flag, but the database still contains items created by a previous config file, those items will remain running but will be locked in the UI (to prevent accidental data loss).
+
+If you want to permanently stop using the YAML file and manage those specific items via the Web UI again, run the eject command:
+
+```bash
+./tinypulse -eject-config
+```
+This safely transitions all config-managed items back to UI control without losing their uptime history.
 
 ---
 

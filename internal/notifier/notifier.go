@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strings"
 	"sync"
 	"time"
 
@@ -29,13 +30,13 @@ var (
 func Register(providerType string, factory Factory) {
 	mu.Lock()
 	defer mu.Unlock()
-	registry[providerType] = factory
+	registry[strings.ToLower(providerType)] = factory
 }
 
 // Build instantiates a Provider from a Notifier model using the registered factories.
 func Build(n *model.Notifier) (Provider, error) {
 	mu.RLock()
-	factory, ok := registry[n.Type]
+	factory, ok := registry[strings.ToLower(n.Type)]
 	mu.RUnlock()
 
 	if !ok {

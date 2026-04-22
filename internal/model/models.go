@@ -4,6 +4,8 @@ import "time"
 
 type Endpoint struct {
 	ID              int64     `json:"id"`
+	UID             *string   `json:"uid"`
+	Source          string    `json:"source"`
 	Type            string    `json:"type"`
 	Name            string    `json:"name"`
 	URL             string    `json:"url"`
@@ -43,8 +45,10 @@ type EndpointWithStats struct {
 
 type Notifier struct {
 	ID         int64     `json:"id"`
+	UID        *string   `json:"uid"`
+	Source     string    `json:"source"`
 	Name       string    `json:"name"`
-	Type       string    `json:"type"`        // e.g., 'TELEGRAM', 'PUSHOVER'
+	Type       string    `json:"type"`        // e.g., 'telegram', 'pushover', 'redis'
 	ConfigJSON string    `json:"config_json"` // JSON string containing credentials/config
 	CreatedAt  time.Time `json:"created_at"`
 }
