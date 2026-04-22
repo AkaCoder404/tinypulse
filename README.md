@@ -13,6 +13,7 @@ Why use TinyPulse?
 
 - **Tiny Footprint:** ~12 MB binary, < 30 MB RAM at rest.
 - **Near Zero Dependencies:** Single static Go binary with embedded Tailwind CSS frontend. No Docker, no Node.js, no PostgreSQL.
+- **Configuration as Code:** Provision and manage endpoints and notifiers entirely via a YAML configuration file alongside UI-managed items. 
 - **Multiple Monitor Types:** Support for HTTP/HTTPS monitors and raw TCP port connections (with more coming soon).
 - **Efficient Data Layer:** Pure-Go SQLite with WAL mode, chunked pruning, and decoupled asynchronous writers. Every check result is stored locally in a single `.db` file.
 - **High Performance:** An in-memory cache and background aggregation engine guarantee instant dashboard load times, even with years of historical data.
@@ -54,15 +55,15 @@ make build
 
 TinyPulse can be configured via flags or environment variables.
 
-| Flag            | Env Var              | Default          | Description                                     |
-| --------------- | -------------------- | ---------------- | ----------------------------------------------- |
-| `-addr`         | `TINYPULSE_ADDR`     | `:8080`          | HTTP listen address                             |
-| `-db`           | `TINYPULSE_DB`       | `./tinypulse.db` | SQLite database path                            |
-| `-password`     | `TINYPULSE_PASSWORD` | *(empty)*        | Enables Basic Auth (Username is always `admin`) |
-| `-config`       | `TINYPULSE_CONFIG`   | *(empty)*        | Path to a YAML configuration file               |
-| `-dry-run`      | *(none)*             | `false`          | Parse config, preview DB changes, and exit      |
-| `-eject-config` | *(none)*             | `false`          | Unlock config-managed items back to UI control  |
-| `-export-config`| *(none)*             | *(empty)*        | Export current database to a YAML config file   |
+| Flag             | Env Var              | Default          | Description                                     |
+| ---------------- | -------------------- | ---------------- | ----------------------------------------------- |
+| `-addr`          | `TINYPULSE_ADDR`     | `:8080`          | HTTP listen address                             |
+| `-db`            | `TINYPULSE_DB`       | `./tinypulse.db` | SQLite database path                            |
+| `-password`      | `TINYPULSE_PASSWORD` | *(empty)*        | Enables Basic Auth (Username is always `admin`) |
+| `-config`        | `TINYPULSE_CONFIG`   | *(empty)*        | Path to a YAML configuration file               |
+| `-dry-run`       | *(none)*             | `false`          | Parse config, preview DB changes, and exit      |
+| `-eject-config`  | *(none)*             | `false`          | Unlock config-managed items back to UI control  |
+| `-export-config` | *(none)*             | *(empty)*        | Export current database to a YAML config file   |
 
 ### Configuration as Code (YAML)
 
