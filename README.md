@@ -7,6 +7,8 @@ A tiny, single-binary, self-hosted uptime monitor for HTTP/HTTPS and TCP endpoin
 ![Binary Size](https://img.shields.io/badge/binary-%3C%2012%20MB-success)
 ![Memory](https://img.shields.io/badge/memory-%3C%2030%20MB-success)
 
+> This application is still in beta testing.
+
 ## Features
 
 Why use TinyPulse?
@@ -177,7 +179,7 @@ Contributions are welcome! Please open an issue or pull request. Feel free to re
 
 ## Acknowledgements
 
-Heavy expired by Uptime-Kuma!
+Heavily expired by Uptime-Kuma!
 
 ## License
 
