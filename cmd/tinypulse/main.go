@@ -44,9 +44,9 @@ func main() {
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
 
 	// ---------------------------------------------------------
-	// Utility Command: Export Config
-	// Reads the current database and exports it to a YAML file.
+	// Utility Commands
 	// ---------------------------------------------------------
+
 	if *exportConfig != "" {
 		database, err := db.New(*dbPath)
 		if err != nil {
@@ -55,31 +55,13 @@ func main() {
 		}
 		defer database.Close()
 
-		cfg, err := database.ExportConfig(context.Background())
-		if err != nil {
-			slog.Error("failed to export database", "error", err)
+		if err := handleExport(database, *exportConfig); err != nil {
+			slog.Error("failed to export configuration", "error", err)
 			os.Exit(1)
 		}
-
-		yamlData, err := yaml.Marshal(cfg)
-		if err != nil {
-			slog.Error("failed to marshal config to YAML", "error", err)
-			os.Exit(1)
-		}
-
-		if err := os.WriteFile(*exportConfig, yamlData, 0644); err != nil {
-			slog.Error("failed to write YAML file", "error", err)
-			os.Exit(1)
-		}
-
-		slog.Info("successfully exported database to YAML configuration", "path", *exportConfig)
 		os.Exit(0)
 	}
 
-	// ---------------------------------------------------------
-	// Utility Command: Eject Config
-	// Unlocks all config-managed items so they can be edited in the UI again.
-	// ---------------------------------------------------------
 	if *ejectConfig {
 		database, err := db.New(*dbPath)
 		if err != nil {
@@ -87,11 +69,11 @@ func main() {
 			os.Exit(1)
 		}
 		defer database.Close()
-		if err := database.EjectConfigItems(context.Background()); err != nil {
-			slog.Error("failed to eject config items", "error", err)
+
+		if err := handleEject(database); err != nil {
+			slog.Error("failed to eject configuration", "error", err)
 			os.Exit(1)
 		}
-		slog.Info("successfully ejected config items. They are now managed by the UI.")
 		os.Exit(0)
 	}
 
@@ -99,39 +81,20 @@ func main() {
 	// Primary Execution Flow
 	// ---------------------------------------------------------
 
-	// 1. If a config file is provided, parse and deeply validate it before touching the DB.
+	var parsedConfig *config.Config
 	if *configPath != "" {
-		cfg, err := config.Parse(*configPath)
+		var err error
+		parsedConfig, err = deepValidateConfig(*configPath)
 		if err != nil {
-			slog.Error("failed to parse config", "error", err)
+			slog.Error("configuration validation failed", "error", err)
 			os.Exit(1)
 		}
 
-		// Deep validate all notifier configurations (checking for missing bot tokens, etc.)
-		for uid, nc := range cfg.Notifiers {
-			configJSON, err := json.Marshal(nc.Config)
-			if err != nil {
-				slog.Error(fmt.Sprintf("notifier %q has an invalid config block", uid), "error", err)
-				os.Exit(1)
-			}
-			dummyNotifier := &model.Notifier{
-				Name:       nc.Name,
-				Type:       nc.Type,
-				ConfigJSON: string(configJSON),
-			}
-			if _, err := notifier.Build(dummyNotifier); err != nil {
-				slog.Error(fmt.Sprintf("invalid configuration for %q notifier %q", nc.Type, uid), "error", err)
-				os.Exit(1)
-			}
-		}
-
-		// 2. Handle --dry-run
-		// If dry-run is enabled, we preview changes and immediately exit.
-		// We avoid creating the DB file if it doesn't already exist.
 		if *dryRun {
+			// Pure dry-run check: skip file creation if database doesn't exist
 			if _, err := os.Stat(*dbPath); os.IsNotExist(err) {
-				if err := db.PrintAllAsCreates(cfg); err != nil {
-					slog.Error("failed to run dry run diff", "error", err)
+				if err := db.PrintAllAsCreates(parsedConfig); err != nil {
+					slog.Error("failed to print pure dry run diff", "error", err)
 					os.Exit(1)
 				}
 				os.Exit(0)
@@ -144,7 +107,7 @@ func main() {
 			}
 			defer database.Close()
 
-			if err := database.PrintDryRunDiff(context.Background(), cfg); err != nil {
+			if err := database.PrintDryRunDiff(context.Background(), parsedConfig); err != nil {
 				slog.Error("failed to run dry run diff", "error", err)
 				os.Exit(1)
 			}
@@ -155,7 +118,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// 3. Open the main Database connection
+	// Open the main Database connection
 	database, err := db.New(*dbPath)
 	if err != nil {
 		slog.Error("failed to open database", "error", err)
@@ -163,30 +126,18 @@ func main() {
 	}
 	defer database.Close()
 
-	// 4. Synchronize the YAML Config into the Database
-	if *configPath != "" {
-		cfg, err := config.Parse(*configPath)
-		if err != nil {
-			slog.Error("failed to parse config after db initialization", "error", err)
-			os.Exit(1)
-		}
-		if err := database.SyncConfig(context.Background(), cfg); err != nil {
+	// Synchronize YAML Configuration
+	if parsedConfig != nil {
+		if err := database.SyncConfig(context.Background(), parsedConfig); err != nil {
 			slog.Error("failed to sync configuration to database", "error", err)
 			os.Exit(1)
 		}
 		slog.Info("successfully synced configuration")
 	} else {
-		// Warn the user if they started without a config file, but locked config items still exist
-		orphanCount, err := database.CountConfigItems(context.Background())
-		if err != nil {
-			slog.Warn("failed to check for orphaned config items", "error", err)
-		} else if orphanCount > 0 {
-			slog.Warn(fmt.Sprintf("found %d config-managed items in the database, but no --config file was provided. These items will remain locked in the UI.", orphanCount))
-			slog.Warn("to safely unlock them back to UI control, run 'tinypulse --eject-config'")
-		}
+		checkOrphans(database)
 	}
 
-	// 5. Start the background monitoring and alert managers
+	// Start background services
 	dispatcher := notifier.NewDispatcher(database)
 	manager := monitor.New(database, dispatcher)
 
@@ -198,8 +149,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// 6. Start the HTTP Server and UI
-	configActive := *configPath != ""
+	// Start HTTP Server
+	configActive := parsedConfig != nil
 	srv := server.New(database, manager, *pass, configActive)
 	httpServer := &http.Server{
 		Addr:         *addr,
@@ -231,4 +182,69 @@ func main() {
 
 	slog.Info("shutdown complete")
 	fmt.Println("TinyPulse stopped.")
+}
+
+// ---------------------------------------------------------
+// CLI Helpers
+// ---------------------------------------------------------
+
+func handleExport(database *db.DB, path string) error {
+	cfg, err := database.ExportConfig(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to export database: %w", err)
+	}
+
+	yamlData, err := yaml.Marshal(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to marshal config to YAML: %w", err)
+	}
+
+	if err := os.WriteFile(path, yamlData, 0644); err != nil {
+		return fmt.Errorf("failed to write YAML file: %w", err)
+	}
+
+	slog.Info("successfully exported database to YAML configuration", "path", path)
+	return nil
+}
+
+func handleEject(database *db.DB) error {
+	if err := database.EjectConfigItems(context.Background()); err != nil {
+		return fmt.Errorf("failed to eject config items: %w", err)
+	}
+	slog.Info("successfully ejected config items. They are now managed by the UI.")
+	return nil
+}
+
+func checkOrphans(database *db.DB) {
+	orphanCount, err := database.CountConfigItems(context.Background())
+	if err != nil {
+		slog.Warn("failed to check for orphaned config items", "error", err)
+	} else if orphanCount > 0 {
+		slog.Warn(fmt.Sprintf("found %d config-managed items in the database, but no --config file was provided. These items will remain locked in the UI.", orphanCount))
+		slog.Warn("to safely unlock them back to UI control, run 'tinypulse --eject-config'")
+	}
+}
+
+func deepValidateConfig(path string) (*config.Config, error) {
+	cfg, err := config.Parse(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse config: %w", err)
+	}
+
+	for uid, nc := range cfg.Notifiers {
+		configJSON, err := json.Marshal(nc.Config)
+		if err != nil {
+			return nil, fmt.Errorf("notifier %q has an invalid config block: %w", uid, err)
+		}
+		dummyNotifier := &model.Notifier{
+			Name:       nc.Name,
+			Type:       nc.Type,
+			ConfigJSON: string(configJSON),
+		}
+		if _, err := notifier.Build(dummyNotifier); err != nil {
+			return nil, fmt.Errorf("invalid configuration for %q notifier %q: %w", nc.Type, uid, err)
+		}
+	}
+
+	return cfg, nil
 }
