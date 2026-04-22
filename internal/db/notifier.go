@@ -8,7 +8,7 @@ import (
 
 func (d *DB) CreateNotifier(ctx context.Context, n *model.Notifier) error {
 	res, err := d.conn.ExecContext(ctx,
-		`INSERT INTO notifiers (name, type, config_json) VALUES (?, ?, ?)`,
+		`INSERT INTO notifiers (name, type, config_json, source) VALUES (?, ?, ?, 'ui')`,
 		n.Name, n.Type, n.ConfigJSON)
 	if err != nil {
 		return err
@@ -20,9 +20,9 @@ func (d *DB) CreateNotifier(ctx context.Context, n *model.Notifier) error {
 
 func (d *DB) GetNotifier(ctx context.Context, id int64) (*model.Notifier, error) {
 	row := d.conn.QueryRowContext(ctx,
-		`SELECT id, name, type, config_json, created_at FROM notifiers WHERE id = ?`, id)
+		`SELECT id, uid, source, name, type, config_json, created_at FROM notifiers WHERE id = ?`, id)
 	n := &model.Notifier{}
-	if err := row.Scan(&n.ID, &n.Name, &n.Type, &n.ConfigJSON, &n.CreatedAt); err != nil {
+	if err := row.Scan(&n.ID, &n.UID, &n.Source, &n.Name, &n.Type, &n.ConfigJSON, &n.CreatedAt); err != nil {
 		return nil, err
 	}
 	return n, nil
@@ -41,7 +41,7 @@ func (d *DB) DeleteNotifier(ctx context.Context, id int64) error {
 }
 
 func (d *DB) ListNotifiers(ctx context.Context) ([]model.Notifier, error) {
-	rows, err := d.conn.QueryContext(ctx, `SELECT id, name, type, config_json, created_at FROM notifiers ORDER BY id DESC`)
+	rows, err := d.conn.QueryContext(ctx, `SELECT id, uid, source, name, type, config_json, created_at FROM notifiers ORDER BY id DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (d *DB) ListNotifiers(ctx context.Context) ([]model.Notifier, error) {
 	var notifiers []model.Notifier
 	for rows.Next() {
 		var n model.Notifier
-		if err := rows.Scan(&n.ID, &n.Name, &n.Type, &n.ConfigJSON, &n.CreatedAt); err != nil {
+		if err := rows.Scan(&n.ID, &n.UID, &n.Source, &n.Name, &n.Type, &n.ConfigJSON, &n.CreatedAt); err != nil {
 			return nil, err
 		}
 		notifiers = append(notifiers, n)
@@ -60,7 +60,7 @@ func (d *DB) ListNotifiers(ctx context.Context) ([]model.Notifier, error) {
 
 func (d *DB) GetNotifiersForEndpoint(ctx context.Context, endpointID int64) ([]model.Notifier, error) {
 	rows, err := d.conn.QueryContext(ctx, `
-		SELECT n.id, n.name, n.type, n.config_json, n.created_at 
+		SELECT n.id, n.uid, n.source, n.name, n.type, n.config_json, n.created_at 
 		FROM notifiers n
 		JOIN endpoint_notifiers en ON n.id = en.notifier_id
 		WHERE en.endpoint_id = ?`, endpointID)
@@ -72,7 +72,7 @@ func (d *DB) GetNotifiersForEndpoint(ctx context.Context, endpointID int64) ([]m
 	var notifiers []model.Notifier
 	for rows.Next() {
 		var n model.Notifier
-		if err := rows.Scan(&n.ID, &n.Name, &n.Type, &n.ConfigJSON, &n.CreatedAt); err != nil {
+		if err := rows.Scan(&n.ID, &n.UID, &n.Source, &n.Name, &n.Type, &n.ConfigJSON, &n.CreatedAt); err != nil {
 			return nil, err
 		}
 		notifiers = append(notifiers, n)

@@ -21,7 +21,7 @@ type Redis struct {
 }
 
 func init() {
-	Register("REDIS", func(configJSON string) (Provider, error) {
+	Register("redis", func(configJSON string) (Provider, error) {
 		var r Redis
 		if err := json.Unmarshal([]byte(configJSON), &r); err != nil {
 			return nil, fmt.Errorf("unmarshal redis config: %w", err)
@@ -37,7 +37,7 @@ func init() {
 }
 
 func (r *Redis) Type() string {
-	return "REDIS"
+	return "redis"
 }
 
 func (r *Redis) Send(ctx context.Context, endpointID int64, endpointName, title, message string) error {

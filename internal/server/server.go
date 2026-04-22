@@ -11,18 +11,20 @@ import (
 )
 
 type Server struct {
-	router   *chi.Mux
-	db       *db.DB
-	manager  *monitor.Manager
-	password string
+	router       *chi.Mux
+	db           *db.DB
+	manager      *monitor.Manager
+	password     string
+	configActive bool
 }
 
-func New(database *db.DB, manager *monitor.Manager, password string) *Server {
+func New(database *db.DB, manager *monitor.Manager, password string, configActive bool) *Server {
 	s := &Server{
-		router:   chi.NewRouter(),
-		db:       database,
-		manager:  manager,
-		password: password,
+		router:       chi.NewRouter(),
+		db:           database,
+		manager:      manager,
+		password:     password,
+		configActive: configActive,
 	}
 
 	s.router.Use(middleware.Logger)
@@ -49,6 +51,9 @@ func (s *Server) routes() {
 
 	s.router.Route("/api", func(r chi.Router) {
 		r.Use(middleware.SetHeader("Content-Type", "application/json"))
+
+		// System Status
+		r.Get("/status", s.getStatus)
 
 		// Endpoints
 		r.Get("/endpoints", s.listEndpoints)

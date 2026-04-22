@@ -69,6 +69,26 @@ type jsonError string
 
 func (e jsonError) Error() string { return string(e) }
 
+type StatusResponse struct {
+	Version          string `json:"version"`
+	ConfigActive     bool   `json:"config_active"`
+	ConfigItemsCount int    `json:"config_items_count"`
+}
+
+func (s *Server) getStatus(w http.ResponseWriter, r *http.Request) {
+	count, err := s.db.CountConfigItems(r.Context())
+	if err != nil {
+		slog.Warn("failed to count config items", "error", err)
+		count = 0
+	}
+
+	respondJSON(w, http.StatusOK, StatusResponse{
+		Version:          "0.1.0-beta.4", // Hardcoded for now, could be passed in
+		ConfigActive:     s.configActive,
+		ConfigItemsCount: count,
+	})
+}
+
 func (s *Server) listEndpoints(w http.ResponseWriter, r *http.Request) {
 	rawEndpoints, err := s.db.ListEndpoints(r.Context())
 	if err != nil {
@@ -165,6 +185,17 @@ func (s *Server) updateEndpoint(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
+	
+	existingEp, err := s.db.GetEndpoint(r.Context(), id)
+	if err != nil {
+		respondError(w, http.StatusNotFound, "endpoint not found")
+		return
+	}
+	if existingEp.Source == "config" {
+		respondError(w, http.StatusForbidden, "this endpoint is managed by configuration and cannot be edited via the UI")
+		return
+	}
+
 	var ep model.Endpoint
 	if err := json.NewDecoder(r.Body).Decode(&ep); err != nil {
 		respondError(w, http.StatusBadRequest, err.Error())
@@ -198,6 +229,17 @@ func (s *Server) deleteEndpoint(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
+
+	existingEp, err := s.db.GetEndpoint(r.Context(), id)
+	if err != nil {
+		respondError(w, http.StatusNotFound, "endpoint not found")
+		return
+	}
+	if existingEp.Source == "config" {
+		respondError(w, http.StatusForbidden, "this endpoint is managed by configuration and cannot be deleted via the UI")
+		return
+	}
+
 	s.manager.Delete(id)
 	if err := s.db.DeleteEndpoint(r.Context(), id); err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
@@ -212,6 +254,17 @@ func (s *Server) pauseEndpoint(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
+
+	existingEp, err := s.db.GetEndpoint(r.Context(), id)
+	if err != nil {
+		respondError(w, http.StatusNotFound, "endpoint not found")
+		return
+	}
+	if existingEp.Source == "config" {
+		respondError(w, http.StatusForbidden, "this endpoint is managed by configuration and cannot be paused via the UI")
+		return
+	}
+
 	paused, err := s.db.TogglePause(r.Context(), id)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
@@ -337,6 +390,16 @@ func (s *Server) updateNotifier(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	existingN, err := s.db.GetNotifier(r.Context(), id)
+	if err != nil {
+		respondError(w, http.StatusNotFound, "notifier not found")
+		return
+	}
+	if existingN.Source == "config" {
+		respondError(w, http.StatusForbidden, "this notifier is managed by configuration and cannot be edited via the UI")
+		return
+	}
+
 	var n model.Notifier
 	if err := json.NewDecoder(r.Body).Decode(&n); err != nil {
 		respondError(w, http.StatusBadRequest, err.Error())
@@ -367,6 +430,17 @@ func (s *Server) deleteNotifier(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
+
+	existingN, err := s.db.GetNotifier(r.Context(), id)
+	if err != nil {
+		respondError(w, http.StatusNotFound, "notifier not found")
+		return
+	}
+	if existingN.Source == "config" {
+		respondError(w, http.StatusForbidden, "this notifier is managed by configuration and cannot be deleted via the UI")
+		return
+	}
+
 	if err := s.db.DeleteNotifier(r.Context(), id); err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return

@@ -1,0 +1,55 @@
+# TinyPulse Example Configuration
+# 
+# You can use environment variables in the format ${VAR_NAME} or $VAR_NAME
+# Run with: tinypulse --config example_config.yml
+# Preview changes with: tinypulse --config example_config.yml --dry-run
+
+endpoints:
+  # A standard HTTP/HTTPS endpoint
+  my_website:
+    name: "My Website"
+    type: "http"
+    url: "https://example.com"
+    interval_seconds: 60
+    fail_threshold: 3
+    notifiers:
+      - telegram_ops
+      - pushover_alerts
+  
+  # A TCP endpoint (useful for checking databases, DNS, SSH, etc.)
+  google_dns:
+    name: "Google DNS"
+    type: "tcp"
+    url: "8.8.8.8:53"
+    interval_seconds: 30
+    fail_threshold: 2
+    notifiers:
+      - telegram_ops
+
+notifiers:
+  # Telegram Notifier
+  telegram_ops:
+    name: "Ops Team Telegram"
+    type: "telegram"
+    config:
+      bot_token: "${TELEGRAM_BOT_TOKEN}" # Loaded from environment variable
+      chat_id: "-1001234567890"
+  
+  # Pushover Notifier
+  pushover_alerts:
+    name: "Pushover Critical Alerts"
+    type: "pushover"
+    config:
+      app_token: "${PUSHOVER_APP_TOKEN}"
+      user_key: "${PUSHOVER_USER_KEY}"
+      priority: 1
+  
+  # Redis Notifier (increments a counter on failure)
+  redis_tracker:
+    name: "Local Redis Tracking"
+    type: "redis"
+    config:
+      address: "localhost:6379"
+      password: ""
+      db: 0
+      key_prefix: "tinypulse"
