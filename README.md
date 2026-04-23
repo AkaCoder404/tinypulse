@@ -26,6 +26,10 @@ Why use TinyPulse?
 - **Built-in Security:** Secure the dashboard and API instantly with HTTP Basic Auth (`TINYPULSE_PASSWORD`).
 - **REST API:** Fully featured `/api` endpoints for programmatic access and automation.
 
+## Screenshot
+
+![alt text](images/cover.png)
+
 ## Quick Start
 
 ### Download a release
