@@ -22,7 +22,7 @@ func (d *DB) SyncConfig(ctx context.Context, cfg *config.Config) error {
 	notifierUIDs := make([]interface{}, 0, len(cfg.Notifiers))
 	for uid, nc := range cfg.Notifiers {
 		notifierUIDs = append(notifierUIDs, uid)
-		
+
 		configJSON, err := json.Marshal(nc.Config)
 		if err != nil {
 			return fmt.Errorf("failed to marshal notifier config for %q: %w", uid, err)
@@ -37,7 +37,7 @@ func (d *DB) SyncConfig(ctx context.Context, cfg *config.Config) error {
 				config_json = excluded.config_json,
 				source = 'config'`,
 			uid, nc.Name, nc.Type, string(configJSON))
-		
+
 		if err != nil {
 			return fmt.Errorf("failed to upsert notifier %q: %w", uid, err)
 		}
@@ -47,7 +47,7 @@ func (d *DB) SyncConfig(ctx context.Context, cfg *config.Config) error {
 	endpointUIDs := make([]interface{}, 0, len(cfg.Endpoints))
 	for uid, ec := range cfg.Endpoints {
 		endpointUIDs = append(endpointUIDs, uid)
-		
+
 		_, err := tx.ExecContext(ctx, `
 			INSERT INTO endpoints (uid, type, name, url, interval_seconds, fail_threshold, paused, source)
 			VALUES (?, ?, ?, ?, ?, ?, 0, 'config')
@@ -59,7 +59,7 @@ func (d *DB) SyncConfig(ctx context.Context, cfg *config.Config) error {
 				fail_threshold = excluded.fail_threshold,
 				source = 'config'`,
 			uid, ec.Type, ec.Name, ec.URL, ec.IntervalSeconds, ec.FailThreshold)
-			
+
 		if err != nil {
 			return fmt.Errorf("failed to upsert endpoint %q: %w", uid, err)
 		}
@@ -93,14 +93,14 @@ func (d *DB) SyncConfig(ctx context.Context, cfg *config.Config) error {
 	}
 
 	// 4. Prune Orphans
-	
+
 	// Prune Config Endpoints not in YAML
 	if len(endpointUIDs) > 0 {
 		placeholders := make([]string, len(endpointUIDs))
 		for i := range placeholders {
 			placeholders[i] = "?"
 		}
-		
+
 		query := fmt.Sprintf(`DELETE FROM endpoints WHERE source = 'config' AND uid NOT IN (%s)`, joinStrings(placeholders, ","))
 		res, err := tx.ExecContext(ctx, query, endpointUIDs...)
 		if err != nil {

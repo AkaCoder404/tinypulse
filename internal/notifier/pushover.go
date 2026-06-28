@@ -41,7 +41,7 @@ func (p *Pushover) Send(ctx context.Context, endpointID int64, endpointName, tit
 	data.Set("user", p.UserKey)
 	data.Set("title", title)
 	data.Set("message", message)
-	
+
 	if p.Priority != 0 {
 		data.Set("priority", fmt.Sprintf("%d", p.Priority))
 	}

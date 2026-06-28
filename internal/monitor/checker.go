@@ -89,7 +89,7 @@ func (c *TCPChecker) Check(ctx context.Context) (*int, int, bool) {
 
 	// We use a Dialer to respect the context timeout
 	dialer := net.Dialer{}
-	
+
 	conn, err := dialer.DialContext(ctx, "tcp", c.address)
 	responseTimeMs := int(time.Since(start).Milliseconds())
 

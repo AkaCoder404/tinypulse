@@ -75,7 +75,7 @@ func (c *Config) validate() error {
 		if !supportedNotifierTypes[n.Type] {
 			return fmt.Errorf("notifier %q uses unsupported type %q (must be lowercase e.g., 'telegram', 'pushover', 'redis')", uid, n.Type)
 		}
-		
+
 		c.Notifiers[uid] = n
 	}
 
@@ -89,7 +89,7 @@ func (c *Config) validate() error {
 		if e.URL == "" {
 			return fmt.Errorf("endpoint %q is missing a url", uid)
 		}
-		
+
 		// Set defaults
 		ep := e
 		if ep.Type == "" {

@@ -12,7 +12,7 @@ import (
 func (d *DB) PrintDryRunDiff(ctx context.Context, cfg *config.Config) error {
 	fmt.Println("[INFO] Performing dry run")
 	fmt.Println()
-	
+
 	if err := d.diffNotifiers(ctx, cfg); err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func (d *DB) PrintDryRunDiff(ctx context.Context, cfg *config.Config) error {
 
 func (d *DB) diffNotifiers(ctx context.Context, cfg *config.Config) error {
 	fmt.Println("Notifiers:")
-	
+
 	// Get existing config notifiers from DB
 	rows, err := d.conn.QueryContext(ctx, `SELECT uid, name, type, config_json FROM notifiers WHERE source = 'config'`)
 	if err != nil {
@@ -41,7 +41,7 @@ func (d *DB) diffNotifiers(ctx context.Context, cfg *config.Config) error {
 		typ        string
 		configJSON string
 	})
-	
+
 	for rows.Next() {
 		var uid, name, typ, configJSON string
 		if err := rows.Scan(&uid, &name, &typ, &configJSON); err != nil {
@@ -81,7 +81,7 @@ func (d *DB) diffNotifiers(ctx context.Context, cfg *config.Config) error {
 
 func (d *DB) diffEndpoints(ctx context.Context, cfg *config.Config) error {
 	fmt.Println("\nEndpoints:")
-	
+
 	rows, err := d.conn.QueryContext(ctx, `SELECT uid, name, type, url, interval_seconds, fail_threshold FROM endpoints WHERE source = 'config'`)
 	if err != nil {
 		return err
@@ -95,7 +95,7 @@ func (d *DB) diffEndpoints(ctx context.Context, cfg *config.Config) error {
 		intervalSeconds int
 		failThreshold   int
 	})
-	
+
 	for rows.Next() {
 		var uid, name, typ, url string
 		var interval, fail int

@@ -97,11 +97,11 @@ func (s *Server) listEndpoints(w http.ResponseWriter, r *http.Request) {
 	}
 
 	statsMap := s.manager.StateManager.GetDashboardStats()
-	
+
 	endpoints := make([]model.EndpointWithStats, len(rawEndpoints))
 	for i, ep := range rawEndpoints {
 		endpoints[i].Endpoint = ep
-		
+
 		if stats, exists := statsMap[ep.ID]; exists {
 			endpoints[i].StatusCode = stats.LastStatusCode
 			endpoints[i].ResponseTimeMs = stats.LastResponseMs
@@ -109,7 +109,7 @@ func (s *Server) listEndpoints(w http.ResponseWriter, r *http.Request) {
 			endpoints[i].CheckedAt = stats.LastCheckedAt
 			endpoints[i].Uptime24h = stats.Uptime24h
 			endpoints[i].Uptime30d = stats.Uptime30d
-			
+
 			if len(stats.RecentChecks) > 0 {
 				endpoints[i].RecentChecks = stats.RecentChecks
 			} else {
@@ -185,7 +185,7 @@ func (s *Server) updateEndpoint(w http.ResponseWriter, r *http.Request) {
 		respondError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
-	
+
 	existingEp, err := s.db.GetEndpoint(r.Context(), id)
 	if err != nil {
 		respondError(w, http.StatusNotFound, "endpoint not found")

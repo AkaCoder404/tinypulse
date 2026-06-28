@@ -82,7 +82,6 @@ func (d *DB) ListActiveEndpoints(ctx context.Context) ([]model.Endpoint, error) 
 	return endpoints, rows.Err()
 }
 
-
 func (d *DB) ListEndpoints(ctx context.Context) ([]model.Endpoint, error) {
 	rows, err := d.conn.QueryContext(ctx,
 		`SELECT id, uid, source, type, name, url, interval_seconds, fail_threshold, paused, created_at FROM endpoints ORDER BY created_at DESC`)
