@@ -53,3 +53,26 @@ notifiers:
       password: ""
       db: 0
       key_prefix: "tinypulse"
+
+  # Bark Notifier (iOS push notifications)
+  bark_alerts:
+    name: "iPhone Bark Alerts"
+    type: "bark"
+    config:
+      key: "${BARK_KEY}" # Device key from the Bark app
+      group: "tinypulse"
+      sound: "alarm"
+      level: "timeSensitive"
+
+  # Webhook Notifier (generic outgoing webhook)
+  ops_webhook:
+    name: "Ops Webhook"
+    type: "webhook"
+    config:
+      url: "https://hooks.example.com/alert"
+      method: "post" # post (default), put, patch, get
+      content_type: "json" # json (default), form, text
+      headers:
+        Authorization: "Bearer ${WEBHOOK_TOKEN}"
+      # Optional body template; empty uses default JSON. Supports {{.title}}, {{.message}}, {{.endpoint}}, {{.endpoint_id}}
+      # body: '{"text":"{{.title}}: {{.message}}"}'

@@ -499,6 +499,8 @@
               <option value="telegram">Telegram</option>
               <option value="pushover">Pushover</option>
               <option value="redis">Redis</option>
+              <option value="bark">Bark</option>
+              <option value="webhook">Webhook</option>
             </select>
           </div>
 
@@ -1276,6 +1278,82 @@
               <p class="mt-1">Also stores endpoint name, last title and message.</p>
             </div>
           `;
+        } else if (type === "bark") {
+          container.innerHTML = `
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Device Key</label>
+              <input type="text" id="config-key" required placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" value="${escapeHtml(config.key)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">From the Bark app</p>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Server (Optional)</label>
+              <input type="text" id="config-server" placeholder="https://api.day.app" value="${escapeHtml(config.server) || "https://api.day.app"}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Official default; use your own URL for a self-hosted server</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Group (Optional)</label>
+                <input type="text" id="config-group" placeholder="tinypulse" value="${escapeHtml(config.group)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Sound (Optional)</label>
+                <input type="text" id="config-sound" placeholder="alarm" value="${escapeHtml(config.sound)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Icon URL (Optional)</label>
+              <input type="text" id="config-icon" placeholder="https://example.com/icon.jpg" value="${escapeHtml(config.icon)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tap URL (Optional)</label>
+              <input type="text" id="config-bark-url" placeholder="https://example.com" value="${escapeHtml(config.url)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Notification Level (Optional)</label>
+              <select id="config-level" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="" ${!config.level || config.level === "active" ? "selected" : ""}>Active</option>
+                <option value="timeSensitive" ${config.level === "timeSensitive" ? "selected" : ""}>Time Sensitive</option>
+                <option value="passive" ${config.level === "passive" ? "selected" : ""}>Passive</option>
+              </select>
+            </div>
+          `;
+        } else if (type === "webhook") {
+          container.innerHTML = `
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">URL</label>
+              <input type="text" id="config-webhook-url" required placeholder="https://hooks.example.com/alert" value="${escapeHtml(config.url)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Method</label>
+                <select id="config-webhook-method" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="post" ${!config.method || config.method === "post" ? "selected" : ""}>POST</option>
+                  <option value="put" ${config.method === "put" ? "selected" : ""}>PUT</option>
+                  <option value="patch" ${config.method === "patch" ? "selected" : ""}>PATCH</option>
+                  <option value="get" ${config.method === "get" ? "selected" : ""}>GET</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Content Type</label>
+                <select id="config-webhook-content-type" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="json" ${!config.content_type || config.content_type === "json" ? "selected" : ""}>JSON</option>
+                  <option value="form" ${config.content_type === "form" ? "selected" : ""}>Form</option>
+                  <option value="text" ${config.content_type === "text" ? "selected" : ""}>Text</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Headers (Optional)</label>
+              <textarea id="config-webhook-headers" rows="3" placeholder="Authorization: Bearer xxxxx
+X-Team: ops" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500">${escapeHtml(Object.entries(config.headers || {}).map(([k, v]) => k + ": " + v).join("\n"))}</textarea>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">One per line in format "Key: Value"</p>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Body Template (Optional)</label>
+              <textarea id="config-webhook-body" rows="4" placeholder='{"text":"{{.title}}: {{.message}}"' class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500">${escapeHtml(config.body)}</textarea>
+              <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Leave empty for default JSON. Placeholders: {{.title}}, {{.message}}, {{.endpoint}}, {{.endpoint_id}}</p>
+            </div>
+          `;
         }
       }
 
@@ -1307,6 +1385,59 @@
               document.getElementById("config-key-prefix").value.trim() ||
               "tinypulse",
           };
+        } else if (type === "bark") {
+          config = {
+            server: document.getElementById("config-server").value.trim(),
+            key: document.getElementById("config-key").value.trim(),
+            group: document.getElementById("config-group").value.trim(),
+            sound: document.getElementById("config-sound").value.trim(),
+            icon: document.getElementById("config-icon").value.trim(),
+            url: document.getElementById("config-bark-url").value.trim(),
+            level: document.getElementById("config-level").value,
+          };
+          for (const k of ["group", "sound", "icon", "url", "level"]) {
+            if (!config[k]) delete config[k];
+          }
+          if (!config.server || config.server === "https://api.day.app") {
+            delete config.server;
+          }
+        } else if (type === "webhook") {
+          const method =
+            document.getElementById("config-webhook-method").value ||
+            "post";
+          const contentType =
+            document.getElementById("config-webhook-content-type").value ||
+            "json";
+          const headers = {};
+          const hText = document
+            .getElementById("config-webhook-headers")
+            .value.trim();
+          if (hText) {
+            for (const line of hText.split("\n")) {
+              const i = line.indexOf(":");
+              if (i > 0) {
+                const k = line.slice(0, i).trim();
+                const v = line.slice(i + 1).trim();
+                if (k) headers[k] = v;
+              }
+            }
+          }
+
+          const body = document
+            .getElementById("config-webhook-body")
+            .value.trim();
+
+          config = {
+            url: document.getElementById("config-webhook-url").value.trim(),
+            method,
+            content_type: contentType,
+            headers,
+            body,
+          };
+          if (Object.keys(headers).length === 0) delete config.headers;
+          if (!body) delete config.body;
+          if (method === "post") delete config.method;
+          if (contentType === "json") delete config.content_type;
         }
 
         const payload = {
