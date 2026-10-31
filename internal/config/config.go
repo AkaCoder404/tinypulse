@@ -60,7 +60,7 @@ func (c *Config) validate() error {
 	uidRegex := regexp.MustCompile(`^[a-zA-Z0-9_.-]+$`)
 
 	supportedEndpointTypes := map[string]bool{"http": true, "tcp": true}
-	supportedNotifierTypes := map[string]bool{"telegram": true, "pushover": true, "redis": true}
+	supportedNotifierTypes := map[string]bool{"telegram": true, "pushover": true, "redis": true, "bark": true}
 
 	for uid, n := range c.Notifiers {
 		if !uidRegex.MatchString(uid) {
@@ -73,7 +73,7 @@ func (c *Config) validate() error {
 			return fmt.Errorf("notifier %q is missing a type", uid)
 		}
 		if !supportedNotifierTypes[n.Type] {
-			return fmt.Errorf("notifier %q uses unsupported type %q (must be lowercase e.g., 'telegram', 'pushover', 'redis')", uid, n.Type)
+			return fmt.Errorf("notifier %q uses unsupported type %q (must be lowercase e.g., 'telegram', 'pushover', 'redis', 'bark')", uid, n.Type)
 		}
 		
 		c.Notifiers[uid] = n

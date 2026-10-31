@@ -143,7 +143,7 @@ This safely transitions all config-managed items back to UI control without losi
 
 ## Notifications
 
-TinyPulse supports multiple notification channels to alert you when an endpoint goes down or recovers. You can configure these in the UI and link them to specific endpoints. Currently supported: *Telegram, Pushover, Redis*
+TinyPulse supports multiple notification channels to alert you when an endpoint goes down or recovers. You can configure these in the UI and link them to specific endpoints. Currently supported: *Telegram, Pushover, Redis, Bark*
 
 *More notification providers (Slack, Discord, Webhooks) will be added in future releases.*
 

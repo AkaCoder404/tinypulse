@@ -53,3 +53,13 @@ notifiers:
       password: ""
       db: 0
       key_prefix: "tinypulse"
+
+  # Bark Notifier (iOS push notifications)
+  bark_alerts:
+    name: "iPhone Bark Alerts"
+    type: "bark"
+    config:
+      key: "${BARK_KEY}" # Device key from the Bark app
+      group: "tinypulse"
+      sound: "alarm"
+      level: "timeSensitive"

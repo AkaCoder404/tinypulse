@@ -499,6 +499,7 @@
               <option value="telegram">Telegram</option>
               <option value="pushover">Pushover</option>
               <option value="redis">Redis</option>
+              <option value="bark">Bark</option>
             </select>
           </div>
 
@@ -1276,6 +1277,45 @@
               <p class="mt-1">Also stores endpoint name, last title and message.</p>
             </div>
           `;
+        } else if (type === "bark") {
+          container.innerHTML = `
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Device Key</label>
+              <input type="text" id="config-key" required placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" value="${escapeHtml(config.key)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">From the Bark app</p>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Server (Optional)</label>
+              <input type="text" id="config-server" placeholder="https://api.day.app" value="${escapeHtml(config.server) || "https://api.day.app"}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Official default; use your own URL for a self-hosted server</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Group (Optional)</label>
+                <input type="text" id="config-group" placeholder="tinypulse" value="${escapeHtml(config.group)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Sound (Optional)</label>
+                <input type="text" id="config-sound" placeholder="alarm" value="${escapeHtml(config.sound)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Icon URL (Optional)</label>
+              <input type="text" id="config-icon" placeholder="https://example.com/icon.jpg" value="${escapeHtml(config.icon)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tap URL (Optional)</label>
+              <input type="text" id="config-bark-url" placeholder="https://example.com" value="${escapeHtml(config.url)}" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Notification Level (Optional)</label>
+              <select id="config-level" class="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="" ${!config.level || config.level === "active" ? "selected" : ""}>Active</option>
+                <option value="timeSensitive" ${config.level === "timeSensitive" ? "selected" : ""}>Time Sensitive</option>
+                <option value="passive" ${config.level === "passive" ? "selected" : ""}>Passive</option>
+              </select>
+            </div>
+          `;
         }
       }
 
@@ -1307,6 +1347,22 @@
               document.getElementById("config-key-prefix").value.trim() ||
               "tinypulse",
           };
+        } else if (type === "bark") {
+          config = {
+            server: document.getElementById("config-server").value.trim(),
+            key: document.getElementById("config-key").value.trim(),
+            group: document.getElementById("config-group").value.trim(),
+            sound: document.getElementById("config-sound").value.trim(),
+            icon: document.getElementById("config-icon").value.trim(),
+            url: document.getElementById("config-bark-url").value.trim(),
+            level: document.getElementById("config-level").value,
+          };
+          for (const k of ["group", "sound", "icon", "url", "level"]) {
+            if (!config[k]) delete config[k];
+          }
+          if (!config.server || config.server === "https://api.day.app") {
+            delete config.server;
+          }
         }
 
         const payload = {
